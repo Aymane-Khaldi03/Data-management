@@ -1,0 +1,49 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.9.7",
+    "axios": "^0.21.4",
+    "date-fns": "^2.22.1",
+    "exceljs": "^4.4.0",
+    "react": "^17.0.2",
+    "react-data-grid": "^7.0.0-beta.44",
+    "react-datepicker": "^3.6.0",
+    "react-dom": "^17.0.2",
+    "react-redux": "^7.2.9",
+    "react-resizable": "^3.0.5",
+    "react-router-dom": "^5.3.4",
+    "react-scripts": "^4.0.3",
+    "react-select": "^5.8.0",
+    "react-table": "^7.8.0",
+    "react-virtualized": "^9.22.5",
+    "redux": "^4.2.1",
+    "xlsx": "^0.18.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "start:legacy": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
