@@ -122,7 +122,7 @@ const ITEquipment = () => {
 
   const handleAddEquipment = async () => {
     if (newEquipment.statut === 'REFORME' && !newEquipment.date_sortie) {
-      alert('The "date sortie" field must be filled if the statut is "reforme".');
+      alert('Le champ "date sortie" doit être rempli, si le statut est "REFORME".');
       return;
     }
 

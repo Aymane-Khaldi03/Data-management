@@ -1,14 +1,16 @@
 const TelephoneLine = require('../models/TelephoneLine');
 
+
 exports.getTelephoneLines = async (req, res) => {
   try {
     const telephoneLines = await TelephoneLine.findAll();
     res.json(telephoneLines);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error fetching Telephone Lines:', err); // Log the actual error
+    res.status(500).send({ message: 'Server error', error: err.message });
   }
 };
+
 
 exports.getTelephoneLineById = async (req, res) => {
   try {
@@ -26,12 +28,18 @@ exports.getTelephoneLineById = async (req, res) => {
 };
 
 exports.createTelephoneLine = async (req, res) => {
-  const { number, type } = req.body;
+  const { numero_de_gsm, full_name, code_entite, direction, fonction, operateur, categorie, poste_GSM } = req.body;
 
   try {
     const newTelephoneLine = await TelephoneLine.create({
-      number,
-      type,
+      numero_de_gsm,
+      full_name,
+      code_entite,
+      direction,
+      fonction,
+      operateur,
+      categorie,
+      poste_GSM,
     });
 
     res.json(newTelephoneLine);
@@ -42,7 +50,7 @@ exports.createTelephoneLine = async (req, res) => {
 };
 
 exports.updateTelephoneLine = async (req, res) => {
-  const { number, type } = req.body;
+  const { numero_de_gsm, full_name, code_entite, direction, fonction, operateur, categorie, poste_GSM } = req.body;
 
   try {
     let telephoneLine = await TelephoneLine.findByPk(req.params.id);
@@ -51,8 +59,14 @@ exports.updateTelephoneLine = async (req, res) => {
       return res.status(404).json({ msg: 'Telephone Line not found' });
     }
 
-    telephoneLine.number = number || telephoneLine.number;
-    telephoneLine.type = type || telephoneLine.type;
+    telephoneLine.numero_de_gsm = numero_de_gsm || telephoneLine.numero_de_gsm;
+    telephoneLine.full_name = full_name || telephoneLine.full_name;
+    telephoneLine.code_entite = code_entite || telephoneLine.code_entite;
+    telephoneLine.direction = direction || telephoneLine.direction;
+    telephoneLine.fonction = fonction || telephoneLine.fonction;
+    telephoneLine.operateur = operateur || telephoneLine.operateur;
+    telephoneLine.categorie = categorie || telephoneLine.categorie;
+    telephoneLine.poste_GSM = poste_GSM || telephoneLine.poste_GSM;
 
     await telephoneLine.save();
 

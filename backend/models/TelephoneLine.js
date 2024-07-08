@@ -8,16 +8,41 @@ const TelephoneLine = sequelize.define('TelephoneLine', {
     allowNull: false,
     primaryKey: true,
   },
-  number: {
+  numero_de_gsm: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
   },
-  type: {
-    type: DataTypes.ENUM('digital', 'analog'),
+  full_name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  code_entite: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  direction: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  fonction: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  operateur: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  categorie: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  poste_GSM: {
+    type: DataTypes.STRING,
     allowNull: false,
   },
 }, {
+  tableName: 'telephone_lines', // Ensure this matches the actual table name
   timestamps: true,
 });
 

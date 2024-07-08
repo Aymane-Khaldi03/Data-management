@@ -1,0 +1,140 @@
+.telephoneline-view-container {
+    padding: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+    width: 100%;
+    overflow: hidden;
+    min-height: 100vh; /* Ensure the container takes full viewport height */
+  }
+  
+  .telephoneline-view-back-button {
+    margin-bottom: 9px;
+    padding: 10px 20px;
+    background-color: #ff8400;
+    border: 4px solid black;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    margin-left: -1125px;
+    margin-top: 5px;
+  }
+  
+  .telephoneline-view-back-button:hover {
+    background-color: rgb(249, 103, 6);
+    transform: scale(1.05);
+  }
+  
+  .telephoneline-view-title {
+    margin-bottom: 20px;
+    font-size: 50px;
+    margin-top: -55px;
+  }
+  
+  .telephoneline-view-toggle-button {
+    margin: 20px 0; /* Adds space above and below the button */
+    padding: 10px 20px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    border: 4px solid black;
+  }
+  
+  .telephoneline-view-toggle-button:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+  }
+  
+  .telephoneline-view-table-container {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    height: 80vh; /* Adjust the height to show more rows */
+    white-space: nowrap;
+  }
+  
+  .telephoneline-view-data-table {
+    width: 150%;
+    height: auto; /* Allow the table height to grow */
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: white;
+  }
+  
+  .telephoneline-view-data-table th, .telephoneline-view-data-table td {
+    border: 1px solid #ccc;
+    padding: 11.5px;
+    text-align: left;
+    white-space: nowrap;
+    font-size: 13px;
+    width: 170px; /* Adjust this value to set the desired width for the columns */
+  }
+  
+  .telephoneline-view-data-table th {
+    background-color: #f2f2f2;
+    cursor: default;
+  }
+  
+  .telephoneline-view-row-even {
+    background-color: #ffffff;
+  }
+  
+  .telephoneline-view-row-odd {
+    background-color: #e6f7ff;
+  }
+  
+  .telephoneline-view-data-table th:first-child, 
+  .telephoneline-view-data-table td:first-child {
+    width: 50px;
+  }
+  
+  .telephoneline-view-footer {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+  }
+  
+  .telephoneline-view-export-button {
+    padding: 10px 20px;
+    background-color: #28a745;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    border: 4px solid black;
+    color: whitesmoke;
+    margin-bottom: 200px;
+  }
+  
+  .telephoneline-view-export-button:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+  }
+  
+  .telephoneline-view-filter-select {
+    width: 180%; /* Ensure the select element takes full width */
+    font-size: 13px; /* Adjust font size if needed */
+    padding: 5px; /* Adjust padding if needed */
+  }
+  .telephoneline-view-filter-select .Select__control {
+    width: 120%;
+    height: 40px; /* Increase height if needed */
+  }
+  
+  .telephoneline-view-filter-select .Select__menu {
+    width: 120%; /* Ensure the dropdown menu takes full width */
+  }
+  
+  .telephoneline-view-filter-select .Select__value-container {
+    width: 120%; /* Ensure the value container takes full width */
+  }

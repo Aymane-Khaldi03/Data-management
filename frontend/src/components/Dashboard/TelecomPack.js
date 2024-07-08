@@ -83,7 +83,7 @@ const TelecomPack = () => {
         alert('Failed to fetch telecom packs: ' + error.message);
       }
     };
-  
+
     const fetchDropdownOptions = async () => {
       try {
         const fields = ['entite', 'operateur', 'produit', 'etatAbonnement', 'data', 'voix', 'mobile', 'internet'];
@@ -103,17 +103,17 @@ const TelecomPack = () => {
         alert('Failed to fetch dropdown options: ' + error.message);
       }
     };
-  
+
     fetchTelecomPacks();
     fetchDropdownOptions();
-  }, []);  
+  }, []);
 
   const handleAddPack = async () => {
     if (!newPack.entite) {
       alert('The "entite" field must be filled.');
       return;
     }
-  
+
     try {
       const formattedPack = setDefaultValues(newPack);
       const response = await axios.post('http://localhost:5000/api/telecom-packs', formattedPack, {
@@ -142,7 +142,7 @@ const TelecomPack = () => {
       console.error('Error adding Telecom Pack:', error.message);
       alert('Failed to add telecom pack: ' + error.message);
     }
-  };  
+  };
 
   const handleDeletePack = async (id) => {
     try {
@@ -251,7 +251,7 @@ const TelecomPack = () => {
                           value={isEditing ? currentPack[innerKey] : newPack[innerKey]}
                           options={options[innerKey] || []}
                           onChange={handleChange}
-                          placeholder={`Enter/Select ${innerKey.replace(/_/g, ' ')}`}
+                          placeholder={`Entrer/Selectionner ${innerKey.replace(/_/g, ' ')}`}
                         />
                       ) : (
                         <input
@@ -260,8 +260,8 @@ const TelecomPack = () => {
                           value={isEditing ? currentPack[innerKey] : newPack[innerKey]}
                           onChange={handleChange}
                           className="input-field"
-                          placeholder={`Enter ${innerKey.replace(/_/g, ' ')}`}
-                        />
+                          placeholder={innerKey === 'numero' ? 'eg: 212XXXXXXXXX' : `Entrer ${innerKey.replace(/_/g, ' ')}`}
+                          />
                       )}
                     </td>
                   ))}

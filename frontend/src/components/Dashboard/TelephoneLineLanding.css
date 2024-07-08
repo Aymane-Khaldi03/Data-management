@@ -1,0 +1,55 @@
+.telephone-landing-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin: 50px 15px;
+  }
+  
+.telephone-card {
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 20px;
+    text-align: center;
+    width: 400px;
+    height: 400px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 40px;
+    margin-top: 70px;
+  }
+  
+.telephone-view-card {
+    background-color: #ff8400; /* Brighter orange color */
+    color: white; /* Text color for contrast */
+    margin-left: 150px;
+  }
+  
+.telephone-modify-card {
+    background-color: #6c2d00; /* Dimmer brown color */
+    color: white; /* Text color for contrast */
+  }
+  
+.telephone-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+.telephone-card-content h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 27px; /* Increased font size */
+    font-weight: bold; /* Made the font bold */
+    text-align: center;
+    color: antiquewhite;
+  }
+  
+.telephone-card-content p {
+    font-size: 16px; /* Adjusted font size to be smaller than the heading */
+    margin: 10px 0 0;
+    text-align: center;
+    color: black;
+  }

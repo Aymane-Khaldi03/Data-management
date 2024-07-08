@@ -20,6 +20,9 @@ import TelecomPackLanding from './components/Dashboard/TelecomPackLanding';
 import TelecomPackView from './components/Dashboard/TelecomPackView';
 
 import './App.css';
+import TelephoneLine from './components/Dashboard/TelephoneLine';
+import TelephoneLineLanding from './components/Dashboard/TelephoneLineLanding';
+import TelephoneLineView from './components/Dashboard/TelephoneLineView';
 
 const AppContent = () => {
   const { user } = useAuth();
@@ -62,6 +65,10 @@ const AppContent = () => {
           <Route path="/telecom-packs" exact component={TelecomPackLanding} />
           <Route path="/telecom-pack-manager" component={TelecomPack} />
           <Route path="/telecom-pack-view" component={TelecomPackView} />
+
+          <Route path="/telephone-lines" exact component={TelephoneLineLanding} />
+          <Route path="/telephone-line-manager" component={TelephoneLine} />
+          <Route path="/telephone-line-view" component={TelephoneLineView} />
 
           <Route path="/edit-excel" component={ExcelEditor} />
         </Switch>

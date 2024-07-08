@@ -7,6 +7,8 @@ const userRoutes = require('./routes/userRoute');
 const excelRoutes = require('./routes/excelRoute');
 const itEquipments = require('./routes/itEquipments'); // Import the IT Equipments route
 const telecomRoutes = require('./routes/telecomRoute'); // Import the Telecom route
+const telephoneLineRoutes = require('./routes/telephoneLineRoute'); // Import the Telephone Line route
+
 const sequelize = require('./config/db');
 
 // Load environment variables
@@ -36,6 +38,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/excel', excelRoutes);
 app.use('/api', itEquipments); // Register the IT Equipments route
 app.use('/api/telecom-packs', telecomRoutes); // Register the Telecom route
+app.use('/api/telephone-lines', telephoneLineRoutes); // Register the Telephone Line route
 
 // Sync database
 const syncDatabase = async () => {

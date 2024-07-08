@@ -21,7 +21,7 @@ const TelecomPack = sequelize.define('TelecomPack', {
     allowNull: false,
   },
   numero: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false,
   },
   etatAbonnement: {
