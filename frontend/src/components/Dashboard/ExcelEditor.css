@@ -77,7 +77,7 @@
   padding: 8px;
   text-align: left;
   position: relative;
-  white-space: nowrap; /* Prevent text wrapping */
+  white-space: nowrap;
 }
 
 .data-table th {
@@ -131,93 +131,32 @@
 .download-button:hover {
   background-color: #0056b3;
 }
-.zoomed-column {
-  margin-top: 20px;
-  border: 2px solid #ccc;
-  padding: 20px;
-  border-radius: 10px;
-  background-color: #f9f9f9;
-  display: flex;
-  flex-direction: column; /* Ensure column direction */
-  align-items: center;
-}
 
-.zoomed-table-title {
-  margin-bottom: 20px; /* Add vertical space between title and table */
-  background-color: #f9f9f9;
-  padding: 7px;
-  border-radius: 4px;
-  z-index: 1000; /* Ensure the title is above other elements */
-}
-
-.zoomed-table {
-  width: 1000px; /* Increase the width of the zoomed table */
-  border-collapse: collapse;
-  background-color: white;
-  margin-top: 6%;
-}
-
-.zoomed-table th,
-.zoomed-table td {
-  border: 5px solid #0f0e0eb6;
-  padding: 10px; /* Make the cells taller */
-  text-align: left;
-  white-space: nowrap;
-}
-
-.zoomed-table input {
-  width: 100%;
-  padding: 15px;
-  font-size: 17px;
-  border: 3px solid #ccc;
-  border-radius: 8px;
-}
-
-.select-column-container {
-  display: flex;
-  align-items: center;
-  margin-top: 5px; /* Adjust as needed */
-}
-
-.select-column-text {
-  margin-left: 5px; /* Space between checkbox and text */
-  color: #007bff; /* Change text color */
-  font-weight: bold; /* Make text bold */
-  cursor: pointer; /* Change cursor to pointer */
-}
-
-/* Additional styles for checkbox if needed */
-.select-column-container input[type="checkbox"] {
-  width: 20px; /* Adjust size */
-  height: 20px; /* Adjust size */
-}
-
-.select-row-container {
-  width: 10px; /* Adjust the width of the select row column */
-}
-
-.zoomed-table-container {
+.pagination {
   display: flex;
   justify-content: center;
-  position: relative;
+  margin-top: 20px;
 }
 
-.zoomed-table-actions {
-  position: absolute;
-  top: 10px; /* Initial top position */
-  left: 10px; /* Adjust the left position as needed */
-  display: flex;
-  flex-direction: column;
-  z-index: 1000; /* Ensure the buttons are above other elements */
-}
-
-.zoomed-table-title {
-  position: absolute;
-  top: 10px; /* Adjust the top position as needed */
-  left: -90px; /* Adjust the left position to align with the table */
-  background-color: #f9f9f9;
-  padding: 7px;
+.pagination button {
+  margin: 0 5px;
+  padding: 5px 10px;
+  background-color: #4D2C21;
+  color: white;
+  border: 3px solid rgb(255, 193, 111);
   border-radius: 4px;
-  z-index: 1000; /* Ensure the title is above other elements */
-  margin-bottom: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination select {
+  margin-left: 10px;
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }

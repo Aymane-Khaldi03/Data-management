@@ -3,8 +3,6 @@ import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 import { useTable, useSortBy, useFilters } from 'react-table';
 import Select from 'react-select';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import './ITEquipment.css';
 
 // Helper function to set default values
@@ -64,13 +62,12 @@ const ITEquipment = () => {
   const history = useHistory();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(250); // Define the page size
-  const [totalPages, setTotalPages] = useState(1);
-  const [filters, setFilters] = useState({});
-  const [sortBy, setSortBy] = useState([]);
-  const [allITEquipments, setAllITEquipments] = useState([]); // Store all data for filtering and sorting
-  const [selectedFilters, setSelectedFilters] = useState({}); // New state to store selected filters
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  const [filters, setFilters] = useState({}); // Add this line
+  const [sortBy, setSortBy] = useState([]); // Add this line
+  const [allITEquipments, setAllITEquipments] = useState([]); // Store all data for filtering and sorting
+  const [selectedFilters, setSelectedFilters] = useState({}); // Add this line
   const fetchITEquipments = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -85,40 +82,15 @@ const ITEquipment = () => {
         },
       });
       setITEquipments(response.data.equipments);
-      setTotalPages(Math.ceil(response.data.equipments.length / pageSize));
       setOptions(response.data.uniqueValues);
     } catch (error) {
       console.error('Error fetching IT Equipments:', error.message);
     }
   };
 
-  const fetchAllITEquipments = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
-        return;
-      }
-
-      const response = await axios.get('http://localhost:5000/api/it-equipments/all', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const allEquipments = response.data.equipments;
-      setAllITEquipments(allEquipments);
-
-      const uniqueValues = response.data.uniqueValues;
-      setOptions(uniqueValues);
-    } catch (error) {
-      console.error('Error fetching all IT Equipments:', error.message);
-    }
-  };
-
   useEffect(() => {
-    fetchAllITEquipments();
     fetchITEquipments();
-  }, [currentPage, pageSize]);
+  }, []);
 
   const handleAddEquipment = async () => {
     if (newEquipment.statut === 'REFORME' && !newEquipment.date_sortie) {
@@ -136,7 +108,7 @@ const ITEquipment = () => {
       });
       console.log('Response from server:', response.data);
 
-      fetchAllITEquipments(); // Refresh the equipment list
+      fetchITEquipments(); // Refresh the equipment list
       setNewEquipment({
         categorie: '',
         marque: '',
@@ -184,7 +156,6 @@ const ITEquipment = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setAllITEquipments((prevEquipments) => prevEquipments.filter(equipment => equipment.id !== id));
       setITEquipments((prevEquipments) => prevEquipments.filter(equipment => equipment.id !== id));
       console.log('Equipment deleted successfully');
     } catch (error) {
@@ -228,7 +199,7 @@ const ITEquipment = () => {
         },
       });
       console.log('Response from server:', response.data);
-      fetchAllITEquipments(); // Refresh the equipment list
+      fetchITEquipments(); // Refresh the equipment list
       setIsEditing(false);
       setCurrentEquipment(null);
       console.log('Equipment updated successfully');
@@ -267,8 +238,6 @@ const ITEquipment = () => {
     }
   };
 
-
-
   const handleFilterChange = (id, value) => {
     setFilters(prevFilters => ({
       ...prevFilters,
@@ -281,7 +250,7 @@ const ITEquipment = () => {
   };
 
   const filteredAndSortedData = React.useMemo(() => {
-    let filteredData = allITEquipments;
+    let filteredData = itEquipments;
 
     Object.keys(filters).forEach(id => {
       if (filters[id] && filters[id].length > 0) {
@@ -312,14 +281,17 @@ const ITEquipment = () => {
       });
     }
 
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    return filteredData.slice(startIndex, endIndex);
-  }, [allITEquipments, filters, sortBy, currentPage, pageSize]);
+    return filteredData;
+  }, [itEquipments, filters, sortBy, currentPage, rowsPerPage]);
 
+  const currentRows = React.useMemo(() => {
+    const indexOfLastRow = currentPage * rowsPerPage;
+    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+    return filteredAndSortedData.slice(indexOfFirstRow, indexOfLastRow);
+  }, [filteredAndSortedData, currentPage, rowsPerPage]);
 
-  const data = React.useMemo(() => filteredAndSortedData.map((equipment, index) => ({
-    rowNumber: (currentPage - 1) * pageSize + index + 1,
+  const data = React.useMemo(() => currentRows.map((equipment, index) => ({
+    rowNumber: (currentPage - 1) * rowsPerPage + index + 1,
     actions: (
       <div>
         <button className="modify-button" onClick={() => handleModifyEquipment(equipment)}>Modify</button>
@@ -327,12 +299,12 @@ const ITEquipment = () => {
       </div>
     ),
     ...equipment,
-  })), [filteredAndSortedData, currentPage, pageSize]);
+  })), [currentRows, currentPage, rowsPerPage]);
 
   const columns = React.useMemo(() => [
     {
       Header: '#',
-      accessor: (row, i) => (currentPage - 1) * pageSize + i + 1,
+      accessor: (row, i) => (currentPage - 1) * rowsPerPage + i + 1,
       disableFilters: true,
       disableSortBy: true,
     },
@@ -356,10 +328,8 @@ const ITEquipment = () => {
         />
       ),
     })),
-  ], [newEquipment, currentPage, pageSize, options, selectedFilters]);
+  ], [newEquipment, currentPage, rowsPerPage, options, selectedFilters]);
 
-
-  ////
   const handlePageNumberClick = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -648,48 +618,25 @@ const ITEquipment = () => {
       <div className="itequipment-view-table-container">
         <Table columns={columns} data={data} />
       </div>
-      <div className="pagination-controls">
-        <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
-          Précédent
-        </button>
-        <span>Page {currentPage} of {totalPages}</span>
-        <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
-          Suivant
-        </button>
-      </div>
-      <div className="page-number-navigation">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i + 1}
-            className={`page-number ${currentPage === i + 1 ? 'active' : ''}`}
-            onClick={() => handlePageNumberClick(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
+      <div className="pagination">
+        <button onClick={() => handlePageNumberClick(1)} disabled={currentPage === 1}>{'<<'}</button>
+        <button onClick={() => handlePageNumberClick(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
+        <span>
+          Page {currentPage} of {Math.ceil(filteredAndSortedData.length / rowsPerPage)}
+        </span>
+        <button onClick={() => handlePageNumberClick(currentPage + 1)} disabled={currentPage === Math.ceil(filteredAndSortedData.length / rowsPerPage)}>{'Suivant'}</button>
+        <button onClick={() => handlePageNumberClick(Math.ceil(filteredAndSortedData.length / rowsPerPage))} disabled={currentPage === Math.ceil(filteredAndSortedData.length / rowsPerPage)}>{'>>'}</button>
+        <select value={rowsPerPage} onChange={(e) => setRowsPerPage(Number(e.target.value))}>
+          <option value={10}>Show 10</option>
+          <option value={25}>Show 25</option>
+          <option value={50}>Show 50</option>
+          <option value={100}>Show 100</option>
+        </select>
       </div>
     </div>
   );
 };
 
-const SelectColumnFilter = ({ column: { filterValue, setFilter, id } }) => {
-  const options = [
-    { value: 'option1', label: 'Option 1' },
-    { value: 'option2', label: 'Option 2' },
-    // Add more options as needed
-  ];
-
-  return (
-    <Select
-      value={filterValue || ''}
-      onChange={(value) => setFilter(value || undefined)}
-      options={options}
-      isMulti
-      placeholder="Filter by..."
-      className="filter-select"
-    />
-  );
-};
 const Table = ({ columns, data }) => {
   const {
     getTableProps,

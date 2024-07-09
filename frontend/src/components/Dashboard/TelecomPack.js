@@ -75,11 +75,20 @@ const TelecomPack = () => {
   const history = useHistory();
   const [subfieldOptions, setSubfieldOptions] = useState([]);
   const [subfield, setSubfield] = useState('');
-
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(250); // Define the page size
   const [totalPages, setTotalPages] = useState(1);
-
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+  
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setCurrentPage(1); // Reset to the first page
+  };
+  
   const fetchDropdownOptions = async () => {
     try {
       const fields = ['entite', 'operateur', 'produit', 'etatAbonnement'];
@@ -490,31 +499,20 @@ const TelecomPack = () => {
       </div>
 
       <div className="table-container">
-        {telecomPacks.length > 0 ? (
-          <Table columns={columns} data={paginatedData} />
-        ) : (
-          <div>No data available</div>
-        )}
+        <Table columns={columns} data={paginatedData} />
       </div>
       <div className="pagination-controls">
-        <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
-          Précédent
-        </button>
+        <button onClick={() => paginate(1)} disabled={currentPage === 1}>{'<<'}</button>
+        <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
         <span>Page {currentPage} of {totalPages}</span>
-        <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
-          Suivant
-        </button>
-      </div>
-      <div className="page-number-navigation">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i + 1}
-            className={`page-number ${currentPage === i + 1 ? 'active' : ''}`}
-            onClick={() => setCurrentPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
+        <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>{'Suivant'}</button>
+        <button onClick={() => paginate(totalPages)} disabled={currentPage === totalPages}>{'>>'}</button>
+        <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
+          <option value={10}>Show 10</option>
+          <option value={25}>Show 25</option>
+          <option value={50}>Show 50</option>
+          <option value={100}>Show 100</option>
+        </select>
       </div>
     </div>
   );

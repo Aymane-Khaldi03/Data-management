@@ -1,34 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { useTable, useSortBy, useFilters } from 'react-table';
+import { useTable, usePagination, useSortBy, useFilters } from 'react-table';
 import Select from 'react-select';
-import 'react-virtualized/styles.css'; // Only import the styles you need
 import './ExcelEditor.css';
-
-const indexToColumnName = (index) => {
-  let columnName = '';
-  let dividend = index + 1;
-
-  while (dividend > 0) {
-    let modulo = (dividend - 1) % 26;
-    columnName = String.fromCharCode(65 + modulo) + columnName;
-    dividend = Math.floor((dividend - modulo) / 26);
-  }
-
-  return columnName;
-};
 
 const ExcelEditor = () => {
   const [columns, setColumns] = useState([]);
   const [data, setData] = useState([]);
   const [fileName, setFileName] = useState('');
   const [selectedRows, setSelectedRows] = useState([]);
-  const [selectedColumn, setSelectedColumn] = useState(null);
   const [sheets, setSheets] = useState([]);
   const [selectedSheet, setSelectedSheet] = useState(null);
   const [workbook, setWorkbook] = useState(null);
-  const [showRows, setShowRows] = useState(true); // State to control row visibility
-  const [selectedColumnRows, setSelectedColumnRows] = useState({}); // Track selected rows for each column
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -43,7 +26,7 @@ const ExcelEditor = () => {
         label: sheetName,
       }));
       setSheets(sheetNames);
-      setWorkbook(newWorkbook); // Set the workbook state
+      setWorkbook(newWorkbook);
       setSelectedSheet(sheetNames[0].value);
 
       handleSheetChange(newWorkbook, sheetNames[0].value);
@@ -58,11 +41,9 @@ const ExcelEditor = () => {
     const [headers, ...rows] = jsonData;
 
     const cols = headers.map((header, index) => ({
-      Header: header || `Column ${indexToColumnName(index)}`, // Handle empty headers
+      Header: header || `Column ${index + 1}`,
       accessor: `col${index}`,
-      Filter: SelectColumnFilter,
       Cell: EditableCell,
-      width: 150, // Default column width
     }));
 
     const formattedData = rows.map((row) => {
@@ -75,7 +56,6 @@ const ExcelEditor = () => {
 
     setColumns(cols);
     setData(formattedData);
-    setShowRows(rows.length <= 100); // Set showRows based on the number of rows
   };
 
   const handleSheetSelect = (selectedOption) => {
@@ -98,71 +78,36 @@ const ExcelEditor = () => {
     setData(updatedData);
   };
 
-  const handleAddRow = (position, isZoomed = false) => {
+  const handleAddRow = (position) => {
     const newRow = {};
     columns.forEach(col => {
       newRow[col.accessor] = '';
     });
     let updatedData = [...data];
-    if (selectedColumn !== null && isZoomed) {
-      // Column-specific row operations in zoomed view
-      const rowsToAdd = selectedColumnRows[selectedColumn] || [];
-      if (position === 'above') {
-        rowsToAdd.forEach(rowIndex => {
-          updatedData = [
-            ...updatedData.slice(0, rowIndex),
-            newRow,
-            ...updatedData.slice(rowIndex),
-          ];
-        });
-      } else if (position === 'below') {
-        rowsToAdd.reverse().forEach(rowIndex => {
-          updatedData = [
-            ...updatedData.slice(0, rowIndex + 1),
-            newRow,
-            ...updatedData.slice(rowIndex + 1),
-          ];
-        });
-      }
-      setSelectedColumnRows({ ...selectedColumnRows, [selectedColumn]: [] });
-    } else {
-      // General row operations
-      if (position === 'above') {
-        selectedRows.forEach(rowIndex => {
-          updatedData = [
-            ...updatedData.slice(0, rowIndex),
-            newRow,
-            ...updatedData.slice(rowIndex),
-          ];
-        });
-      } else if (position === 'below') {
-        selectedRows.reverse().forEach(rowIndex => {
-          updatedData = [
-            ...updatedData.slice(0, rowIndex + 1),
-            newRow,
-            ...updatedData.slice(rowIndex + 1),
-          ];
-        });
-      }
-      setSelectedRows([]);
+    if (position === 'above') {
+      selectedRows.forEach(rowIndex => {
+        updatedData = [
+          ...updatedData.slice(0, rowIndex),
+          newRow,
+          ...updatedData.slice(rowIndex),
+        ];
+      });
+    } else if (position === 'below') {
+      selectedRows.reverse().forEach(rowIndex => {
+        updatedData = [
+          ...updatedData.slice(0, rowIndex + 1),
+          newRow,
+          ...updatedData.slice(rowIndex + 1),
+        ];
+      });
     }
-
+    setSelectedRows([]);
     setData(updatedData);
   };
 
-  const handleDeleteRow = (isZoomed = false) => {
-    let updatedData = [...data];
-    if (selectedColumn !== null && isZoomed) {
-      // Column-specific row operations in zoomed view
-      const rowsToDelete = selectedColumnRows[selectedColumn] || [];
-      updatedData = data.filter((_, index) => !rowsToDelete.includes(index));
-      setSelectedColumnRows({ ...selectedColumnRows, [selectedColumn]: [] });
-    } else {
-      // General row operations
-      updatedData = data.filter((_, index) => !selectedRows.includes(index));
-      setSelectedRows([]);
-    }
-
+  const handleDeleteRow = () => {
+    const updatedData = data.filter((_, index) => !selectedRows.includes(index));
+    setSelectedRows([]);
     setData(updatedData);
   };
 
@@ -171,29 +116,6 @@ const ExcelEditor = () => {
       setSelectedRows(selectedRows.filter(index => index !== rowIndex));
     } else {
       setSelectedRows([...selectedRows, rowIndex]);
-    }
-  };
-
-  const handleSelectColumnRow = (columnId, rowIndex) => {
-    setSelectedColumnRows(prevState => {
-      const newSelectedColumnRows = { ...prevState };
-      if (!newSelectedColumnRows[columnId]) {
-        newSelectedColumnRows[columnId] = [];
-      }
-      if (newSelectedColumnRows[columnId].includes(rowIndex)) {
-        newSelectedColumnRows[columnId] = newSelectedColumnRows[columnId].filter(index => index !== rowIndex);
-      } else {
-        newSelectedColumnRows[columnId].push(rowIndex);
-      }
-      return newSelectedColumnRows;
-    });
-  };
-
-  const handleSelectColumn = (columnId) => {
-    if (selectedColumn === columnId) {
-      setSelectedColumn(null);
-    } else {
-      setSelectedColumn(columnId);
     }
   };
 
@@ -217,7 +139,6 @@ const ExcelEditor = () => {
     document.body.appendChild(a);
     a.click();
     a.remove();
-
   };
 
   const SelectColumnFilter = ({
@@ -246,11 +167,10 @@ const ExcelEditor = () => {
     );
   };
 
-  const Table = ({ columns, data, showRows }) => {
+  const Table = ({ columns, data }) => {
     const defaultColumn = {
       Cell: EditableCell,
       Filter: SelectColumnFilter,
-      width: 150,
     };
     const {
       getTableProps,
@@ -258,48 +178,26 @@ const ExcelEditor = () => {
       headerGroups,
       rows,
       prepareRow,
-      setFilter,
+      state: { pageIndex, pageSize },
+      gotoPage,
+      nextPage,
+      previousPage,
+      setPageSize,
+      canNextPage,
+      canPreviousPage,
+      pageOptions,
+      pageCount,
+      page
     } = useTable(
       {
         columns,
         data,
         defaultColumn,
-        updateMyData: handleCellChange,
       },
       useFilters,
-      useSortBy
+      useSortBy,
+      usePagination
     );
-
-    const zoomedTableRef = useRef(null);
-    const buttonsRef = useRef(null);
-
-    useEffect(() => {
-      const handleScroll = () => {
-        const zoomedTable = zoomedTableRef.current;
-        const buttons = buttonsRef.current;
-
-        if (!zoomedTable || !buttons) return;
-
-        const zoomedTableTop = zoomedTable.getBoundingClientRect().top + window.scrollY;
-        const zoomedTableBottom = zoomedTable.getBoundingClientRect().bottom + window.scrollY;
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-        if (scrollTop > zoomedTableTop && scrollTop < zoomedTableBottom - buttons.offsetHeight) {
-          buttons.style.position = 'fixed';
-          buttons.style.top = '20px';
-        } else {
-          buttons.style.position = 'absolute';
-          buttons.style.top = '20px';
-        }
-      };
-
-      window.addEventListener('scroll', handleScroll);
-
-      // Clean up event listener
-      return () => {
-        window.removeEventListener('scroll', handleScroll);
-      };
-    }, []);
 
     return (
       <div className="table-container">
@@ -312,13 +210,11 @@ const ExcelEditor = () => {
           <thead>
             {headerGroups.map(headerGroup => (
               <tr {...headerGroup.getHeaderGroupProps()}>
-                <th className="select-row-container">#</th> {/* Extra header for row numbers */}
-                <th className="select-row-container">Select Row</th> {/* Extra header for checkboxes */}
-                {headerGroup.headers.map((column, index) => (
+                <th className="select-row-container">Select Row</th>
+                {headerGroup.headers.map(column => (
                   <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                    <div style={{ width: column.width }}>
-                      {indexToColumnName(index)} {/* Use the helper function here */}
-                      <div>{column.render('Header')}</div>
+                    <div>
+                      {column.render('Header')}
                       <span>
                         {column.isSorted
                           ? column.isSortedDesc
@@ -327,27 +223,17 @@ const ExcelEditor = () => {
                           : ''}
                       </span>
                       <div>{column.canFilter ? column.render('Filter') : null}</div>
-                      <div className="select-column-container">
-                        <input
-                          type="checkbox"
-                          checked={selectedColumn === column.id}
-                          onChange={() => handleSelectColumn(column.id)}
-                        />
-                        <span className="select-column-text">Select Column</span>
-                      </div>
                     </div>
                   </th>
                 ))}
               </tr>
             ))}
           </thead>
-
           <tbody {...getTableBodyProps()}>
-            {showRows && rows.map((row, rowIndex) => {
+            {page.map((row, rowIndex) => {
               prepareRow(row);
               return (
                 <tr {...row.getRowProps()}>
-                  <td className="select-row-container">{rowIndex + 1}</td> {/* Cell for row number */}
                   <td className="select-row-container">
                     <input
                       type="checkbox"
@@ -363,53 +249,38 @@ const ExcelEditor = () => {
             })}
           </tbody>
         </table>
-        {selectedColumn !== null && (
-          <div className="zoomed-column" ref={zoomedTableRef}>
-            <div className="zoomed-table-container">
-              <div className="zoomed-table-actions" ref={buttonsRef}>
-                <button onClick={() => handleAddRow('above', true)} className="action-button">Add Row Above</button>
-                <button onClick={() => handleAddRow('below', true)} className="action-button">Add Row Below</button>
-                <button onClick={() => handleDeleteRow(true)} className="action-button delete">Delete</button>
-              </div>
-              <h3 className="zoomed-table-title">{columns.find(col => col.accessor === selectedColumn).Header}</h3>
-              <table className="zoomed-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Select Row</th>
-                    <th>{columns.find(col => col.accessor === selectedColumn).Header}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, index) => {
-                    prepareRow(row);
-                    return (
-                      <tr {...row.getRowProps()}>
-                        <td>{index + 1}</td>
-                        <td className="select-row-container">
-                          <input
-                            type="checkbox"
-                            checked={selectedColumnRows[selectedColumn]?.includes(index) || false}
-                            onChange={() => handleSelectColumnRow(selectedColumn, index)}
-                          />
-                        </td>
-                        <td>
-                          <EditableCell
-                            value={row.values[selectedColumn]}
-                            row={{ index }}
-                            column={{ id: selectedColumn }}
-                            updateMyData={handleCellChange}
-                            className="zoomed-input"
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+        <div className="pagination">
+          <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+            {'<<'}
+          </button>
+          <button onClick={() => previousPage()} disabled={!canPreviousPage}>
+            {'<'}
+          </button>
+          <button onClick={() => nextPage()} disabled={!canNextPage}>
+            {'>'}
+          </button>
+          <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
+            {'>>'}
+          </button>
+          <span>
+            Page{' '}
+            <strong>
+              {pageIndex + 1} of {pageOptions.length}
+            </strong>{' '}
+          </span>
+          <select
+            value={pageSize}
+            onChange={e => {
+              setPageSize(Number(e.target.value));
+            }}
+          >
+            {[10, 20, 30, 40, 50].map(pageSize => (
+              <option key={pageSize} value={pageSize}>
+                Show {pageSize}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     );
   };
@@ -435,7 +306,6 @@ const ExcelEditor = () => {
     }, [initialValue]);
 
     return <input value={value} onChange={onChange} onBlur={onBlur} className={className} />;
-
   };
 
   return (
@@ -452,7 +322,7 @@ const ExcelEditor = () => {
         />
       )}
       {columns.length > 0 && (
-        <Table columns={columns} data={data} showRows={showRows} />
+        <Table columns={columns} data={data} />
       )}
       <button onClick={downloadExcel} className="download-button">Download Modified Excel</button>
     </div>

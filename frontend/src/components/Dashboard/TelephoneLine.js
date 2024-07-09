@@ -56,9 +56,18 @@ const TelephoneLine = () => {
   const history = useHistory();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10); // Define the page size
-  const [totalPages, setTotalPages] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Define the page size
+  const totalPages = Math.ceil(telephoneLines.length / rowsPerPage);
 
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+  
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setCurrentPage(1); // Reset to the first page
+  };
+  
   useEffect(() => {
     const fetchTelephoneLines = async () => {
       try {
@@ -69,7 +78,6 @@ const TelephoneLine = () => {
         });
         const data = response.data.map(line => setDefaultValues(line));
         setTelephoneLines(data);
-        setTotalPages(Math.ceil(data.length / pageSize));
       } catch (error) {
         console.error('Error fetching Telephone Lines:', error.message);
         alert('Failed to fetch telephone lines: ' + error.message);
@@ -125,7 +133,6 @@ const TelephoneLine = () => {
         categorie: '',
         poste_GSM: '',
       });
-      setTotalPages(Math.ceil([...telephoneLines, addedLine].length / pageSize));
     } catch (error) {
       console.error('Error adding Telephone Line:', error.message);
       alert('Failed to add telephone line: ' + error.message);
@@ -140,7 +147,6 @@ const TelephoneLine = () => {
         },
       });
       setTelephoneLines((prevLines) => prevLines.filter(line => line.id !== id));
-      setTotalPages(Math.ceil((telephoneLines.length - 1) / pageSize));
     } catch (error) {
       console.error('Error deleting Telephone Line:', error.message);
       alert('Failed to delete telephone line: ' + error.message);
@@ -164,7 +170,6 @@ const TelephoneLine = () => {
       setTelephoneLines(telephoneLines.map(line => line.id === updatedLine.id ? updatedLine : line));
       setIsEditing(false);
       setCurrentLine(null);
-      setTotalPages(Math.ceil(telephoneLines.length / pageSize));
     } catch (error) {
       console.error('Error updating Telephone Line:', error.message);
       alert('Failed to update telephone line: ' + error.message);
@@ -189,7 +194,7 @@ const TelephoneLine = () => {
   const columns = React.useMemo(() => [
     {
       Header: '#',
-      accessor: (row, i) => (currentPage - 1) * pageSize + i + 1,
+      accessor: (row, i) => (currentPage - 1) * rowsPerPage + i + 1,
       disableFilters: true,
       disableSortBy: true,
       width: 50, // Set a specific width if needed
@@ -212,13 +217,13 @@ const TelephoneLine = () => {
       accessor: key,
       Filter: SelectColumnFilter,
     })),
-  ], [newLine, currentPage, pageSize]);  
+  ], [newLine, currentPage, rowsPerPage]);  
 
   const paginatedData = React.useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
     return telephoneLines.slice(startIndex, endIndex);
-  }, [telephoneLines, currentPage, pageSize]);
+  }, [telephoneLines, currentPage, rowsPerPage]);
 
   return (
     <div className="telephone-line-manager">
@@ -270,24 +275,17 @@ const TelephoneLine = () => {
         <Table columns={columns} data={paginatedData} />
       </div>
       <div className="pagination-controls">
-        <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
-          Précédent
-        </button>
+        <button onClick={() => paginate(1)} disabled={currentPage === 1}>{'<<'}</button>
+        <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
         <span>Page {currentPage} of {totalPages}</span>
-        <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
-          Suivant
-        </button>
-      </div>
-      <div className="page-number-navigation">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i + 1}
-            className={`page-number ${currentPage === i + 1 ? 'active' : ''}`}
-            onClick={() => setCurrentPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
+        <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>{'Suivant'}</button>
+        <button onClick={() => paginate(totalPages)} disabled={currentPage === totalPages}>{'>>'}</button>
+        <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
+          <option value={10}>Show 10</option>
+          <option value={25}>Show 25</option>
+          <option value={50}>Show 50</option>
+          <option value={100}>Show 100</option>
+        </select>
       </div>
     </div>
   );
