@@ -9,12 +9,12 @@ const TelephoneLine = sequelize.define('TelephoneLine', {
     primaryKey: true,
   },
   numero_de_gsm: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT, //
     allowNull: false,
     unique: true,
   },
   full_name: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT, //
     allowNull: false,
   },
   code_entite: {
@@ -22,7 +22,7 @@ const TelephoneLine = sequelize.define('TelephoneLine', {
     allowNull: false,
   },
   direction: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING, 
     allowNull: false,
   },
   fonction: {
@@ -34,11 +34,11 @@ const TelephoneLine = sequelize.define('TelephoneLine', {
     allowNull: false,
   },
   categorie: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT, // 
     allowNull: false,
   },
-  poste_GSM: {
-    type: DataTypes.STRING,
+  poste_GSM: { 
+    type: DataTypes.TEXT, //
     allowNull: false,
   },
 }, {

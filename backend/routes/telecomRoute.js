@@ -58,7 +58,9 @@ router.delete('/admin/telecom-pack-modifications', authenticate, async (req, res
 router.get('/dropdown/:field', authenticate, async (req, res) => {
   try {
     const field = req.params.field;
+    console.log(`Fetching dropdown values for field: ${field}`);
     let columnName;
+
     switch (field) {
       case 'entite':
         columnName = 'entite';
@@ -81,24 +83,14 @@ router.get('/dropdown/:field', authenticate, async (req, res) => {
       case 'dateEtat':
         columnName = 'dateetat'; // database column name
         break;
-      case 'data':
-        columnName = 'data';
-        break;
-      case 'voix':
-        columnName = 'voix';
-        break;
-      case 'mobile':
-        columnName = 'mobile';
-        break;
-      case 'internet':
-        columnName = 'internet';
-        break;
       default:
         throw new Error(`Field '${field}' is not recognized`);
     }
+
     const values = await TelecomPack.findAll({
       attributes: [[fn('DISTINCT', col(columnName)), field]]
     });
+
     res.json(values.map(item => item[field]));
   } catch (error) {
     console.error(`Error fetching distinct values for field '${req.params.field}':`, error);

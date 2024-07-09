@@ -20,6 +20,10 @@ const TelecomPack = sequelize.define('TelecomPack', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  produit2: {
+    type: DataTypes.STRING, // Add this field
+    allowNull: true,
+  },
   numero: {
     type: DataTypes.TEXT,
     allowNull: false,
@@ -47,23 +51,7 @@ const TelecomPack = sequelize.define('TelecomPack', {
   observation: {
     type: DataTypes.TEXT,
     allowNull: true,
-  },
-  data: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  voix: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  mobile: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  internet: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
+  }
 }, {
   tableName: 'telecom_pack', // Ensure this matches the actual table name
   timestamps: true,

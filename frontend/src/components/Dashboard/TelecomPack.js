@@ -5,7 +5,30 @@ import { useTable, useSortBy, useFilters } from 'react-table';
 import Select from 'react-select';
 import './TelecomPack.css';
 
-const setDefaultValues = (data, defaultValue = '------') => {
+const subfieldOptionsMap = {
+  'DATA': ['VPNLL', 'VPLS', 'VPNADSL', 'ADSLSECOURS'],
+  'VOIX': ['RTC', 'MARNIS'],
+  'MOBILE': ['GSM'],
+  'INTERNET': ['ADSL', '4G']
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
+};
+
+const formatTelecomPackData = (pack) => {
+  const formattedPack = setDefaultValues(pack);
+  return {
+    ...formattedPack,
+    dateAbonnement: formatDate(formattedPack.dateAbonnement),
+    dateReengagement: formatDate(formattedPack.dateReengagement),
+    dateEtat: formatDate(formattedPack.dateEtat),
+  };
+};
+
+const setDefaultValues = (data, defaultValue = '') => {
   return Object.fromEntries(
     Object.entries(data).map(([key, value]) => {
       if (value === '' || value === null) {
@@ -21,40 +44,29 @@ const TelecomPack = () => {
   const [options, setOptions] = useState({
     entite: [],
     operateur: [],
-    produit: [],
+    produit: ['DATA', 'VOIX', 'MOBILE', 'INTERNET'],
     etatAbonnement: [],
-    data: [],
-    voix: [],
-    mobile: [],
-    internet: [],
   });
   const [newPack, setNewPack] = useState({
     entite: '',
     operateur: '',
     produit: '',
+    produit2: '',
     numero: '',
     etatAbonnement: '',
     dateAbonnement: '',
     dateReengagement: '',
     dateEtat: '',
-    observation: '',
-    data: '',
-    voix: '',
-    mobile: '',
-    internet: '',
+    observation: ''
   });
-
   const [isEditing, setIsEditing] = useState(false);
   const [currentPack, setCurrentPack] = useState(null);
   const history = useHistory();
-
-  const formatDate = (dateString) => {
-    if (!dateString || dateString === '------') return '';
-    const date = new Date(dateString);
-    return date.toISOString().split('T')[0];
-  };
+  const [subfieldOptions, setSubfieldOptions] = useState([]);
+  const [subfield, setSubfield] = useState('');
 
   useEffect(() => {
+    let isMounted = true;
     const fetchTelecomPacks = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/telecom-packs', {
@@ -62,22 +74,14 @@ const TelecomPack = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        const data = response.data.map(pack => {
-          const formattedPack = setDefaultValues(pack);
-          return {
-            ...formattedPack,
-            dateAbonnement: formatDate(formattedPack.dateAbonnement),
-            dateReengagement: formatDate(formattedPack.dateReengagement),
-            dateEtat: formatDate(formattedPack.dateEtat),
-          };
-        });
+        const data = response.data.map(formatTelecomPackData);
         // Sort the data by "entite" column
         data.sort((a, b) => {
           const entiteA = a.entite.match(/\d+/);
           const entiteB = b.entite.match(/\d+/);
           return entiteA - entiteB;
         });
-        setTelecomPacks(data);
+        if (isMounted) setTelecomPacks(data);
       } catch (error) {
         console.error('Error fetching Telecom Packs:', error.message);
         alert('Failed to fetch telecom packs: ' + error.message);
@@ -86,7 +90,7 @@ const TelecomPack = () => {
 
     const fetchDropdownOptions = async () => {
       try {
-        const fields = ['entite', 'operateur', 'produit', 'etatAbonnement', 'data', 'voix', 'mobile', 'internet'];
+        const fields = ['entite', 'operateur', 'produit', 'etatAbonnement'];
         const fetchedOptions = {};
         for (const field of fields) {
           const response = await axios.get(`http://localhost:5000/api/telecom-packs/dropdown/${field}`, {
@@ -94,7 +98,7 @@ const TelecomPack = () => {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
           });
-          const uniqueValues = Array.from(new Set(response.data.filter(value => value !== '').concat('------')));
+          const uniqueValues = Array.from(new Set(response.data.filter(value => value !== '')));
           fetchedOptions[field] = uniqueValues;
         }
         setOptions(fetchedOptions);
@@ -106,6 +110,9 @@ const TelecomPack = () => {
 
     fetchTelecomPacks();
     fetchDropdownOptions();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleAddPack = async () => {
@@ -113,49 +120,35 @@ const TelecomPack = () => {
       alert('The "entite" field must be filled.');
       return;
     }
-
+  
     try {
-      const formattedPack = setDefaultValues(newPack);
+      const formattedPack = setDefaultValues({ ...newPack });
+      console.log('Adding pack with produit2:', formattedPack.produit2); // Debugging statement
       const response = await axios.post('http://localhost:5000/api/telecom-packs', formattedPack, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
       const addedPack = response.data;
+      console.log('Added pack response:', addedPack); // Debugging statement
       setTelecomPacks([...telecomPacks, addedPack]);
       setNewPack({
         entite: '',
         operateur: '',
         produit: '',
+        produit2: '',
         numero: '',
         etatAbonnement: '',
         dateAbonnement: '',
         dateReengagement: '',
         dateEtat: '',
-        observation: '',
-        data: '',
-        voix: '',
-        mobile: '',
-        internet: '',
+        observation: ''
       });
+      setSubfield('');
+      setSubfieldOptions([]);
     } catch (error) {
       console.error('Error adding Telecom Pack:', error.message);
       alert('Failed to add telecom pack: ' + error.message);
-    }
-  };
-
-  const handleDeletePack = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/telecom-packs/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      // Properly update the state to re-render the table
-      setTelecomPacks((prevPacks) => prevPacks.filter(pack => pack.id !== id));
-    } catch (error) {
-      console.error('Error deleting Telecom Pack:', error.message);
-      alert('Failed to delete telecom pack: ' + error.message);
     }
   };
 
@@ -167,20 +160,27 @@ const TelecomPack = () => {
       dateReengagement: formatDate(pack.dateReengagement),
       dateEtat: formatDate(pack.dateEtat),
     });
+    const options = subfieldOptionsMap[pack.produit] || [];
+    setSubfieldOptions(options);
+    setSubfield(pack.produit2);
   };
 
   const handleUpdatePack = async () => {
     try {
-      const formattedPack = setDefaultValues(currentPack);
+      const formattedPack = setDefaultValues({ ...currentPack });
+      console.log('Updating pack with produit2:', formattedPack.produit2); // Debugging statement
       const response = await axios.put(`http://localhost:5000/api/telecom-packs/${currentPack.id}`, formattedPack, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
       const updatedPack = response.data;
+      console.log('Updated pack response:', updatedPack); // Debugging statement
       setTelecomPacks(telecomPacks.map(pack => pack.id === updatedPack.id ? updatedPack : pack));
       setIsEditing(false);
       setCurrentPack(null);
+      setSubfield('');
+      setSubfieldOptions([]);
     } catch (error) {
       console.error('Error updating Telecom Pack:', error.message);
       alert('Failed to update telecom pack: ' + error.message);
@@ -199,6 +199,58 @@ const TelecomPack = () => {
         ...prevState,
         [name]: value,
       }));
+    }
+  };
+
+  const handleProduitChange = (e) => {
+    const { value } = e.target;
+    const options = subfieldOptionsMap[value] || [];
+    setSubfieldOptions(options);
+    setSubfield(''); // Reset subfield when produit changes
+  
+    if (isEditing) {
+      setCurrentPack(prevState => ({
+        ...prevState,
+        produit: value,
+        produit2: '' // Reset produit2 when produit changes
+      }));
+    } else {
+      setNewPack(prevState => ({
+        ...prevState,
+        produit: value,
+        produit2: '' // Reset produit2 when produit changes
+      }));
+    }
+  };
+  
+  const handleSubfieldChange = (e) => {
+    const { value } = e.target;
+    if (isEditing) {
+      setCurrentPack(prevState => ({
+        ...prevState,
+        produit2: value,
+      }));
+    } else {
+      setNewPack(prevState => ({
+        ...prevState,
+        produit2: value,
+      }));
+    }
+    setSubfield(value);
+  };
+  
+
+  const handleDeletePack = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/telecom-packs/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      setTelecomPacks(telecomPacks.filter(pack => pack.id !== id));
+    } catch (error) {
+      console.error('Error deleting Telecom Pack:', error.message);
+      alert('Failed to delete telecom pack: ' + error.message);
     }
   };
 
@@ -221,12 +273,59 @@ const TelecomPack = () => {
         </div>
       ),
     },
-    ...Object.keys(newPack).map((key) => ({
-      Header: key.replace(/_/g, ' '),
-      accessor: key,
+    {
+      Header: 'entite',
+      accessor: 'entite',
       Filter: SelectColumnFilter,
-    })),
-  ], [newPack]);
+    },
+    {
+      Header: 'operateur',
+      accessor: 'operateur',
+      Filter: SelectColumnFilter,
+    },
+    {
+      Header: 'produit',
+      accessor: 'produit',
+      Filter: SelectColumnFilter,
+      Cell: ({ value }) => value || null,
+    },
+    {
+      Header: 'produit2',
+      accessor: 'produit2',
+      Filter: SelectColumnFilter,
+      Cell: ({ value }) => value || null,
+    },
+    {
+      Header: 'numero',
+      accessor: 'numero',
+      Filter: SelectColumnFilter,
+    },
+    {
+      Header: 'etatAbonnement',
+      accessor: 'etatAbonnement',
+      Filter: SelectColumnFilter,
+    },
+    {
+      Header: 'dateAbonnement',
+      accessor: 'dateAbonnement',
+      Filter: SelectColumnFilter,
+    },
+    {
+      Header: 'dateReengagement',
+      accessor: 'dateReengagement',
+      Filter: SelectColumnFilter,
+    },
+    {
+      Header: 'dateEtat',
+      accessor: 'dateEtat',
+      Filter: SelectColumnFilter,
+    },
+    {
+      Header: 'observation',
+      accessor: 'observation',
+      Filter: SelectColumnFilter,
+    },
+  ], []);
 
   const data = React.useMemo(() => telecomPacks, [telecomPacks]);
 
@@ -240,34 +339,53 @@ const TelecomPack = () => {
         <table className="form-table telecom-pack-form-table">
           <tbody>
             {Object.keys(newPack).map((key, index) => (
-              index % 3 === 0 && (
+              index % 3 === 0 && key !== 'produit2' && ( // Remove produit2 from the map
                 <tr key={index}>
                   {Object.keys(newPack).slice(index, index + 3).map(innerKey => (
-                    <td key={innerKey}>
-                      <label className="telecom-pack-form-label">{innerKey.replace(/_/g, ' ')}</label>
-                      {['entite', 'operateur', 'produit', 'etatAbonnement', 'data', 'voix', 'mobile', 'internet'].includes(innerKey) ? (
-                        <CustomDropdown
-                          name={innerKey}
-                          value={isEditing ? currentPack[innerKey] : newPack[innerKey]}
-                          options={options[innerKey] || []}
-                          onChange={handleChange}
-                          placeholder={`Entrer/Selectionner ${innerKey.replace(/_/g, ' ')}`}
-                        />
-                      ) : (
-                        <input
-                          type={innerKey.startsWith('date') ? 'date' : 'text'}
-                          name={innerKey}
-                          value={isEditing ? currentPack[innerKey] : newPack[innerKey]}
-                          onChange={handleChange}
-                          className="input-field"
-                          placeholder={innerKey === 'numero' ? 'eg: 212XXXXXXXXX' : `Entrer ${innerKey.replace(/_/g, ' ')}`}
+                    innerKey !== 'produit2' && ( // Remove produit2 from the map
+                      <td key={innerKey}>
+                        <label className="telecom-pack-form-label">{innerKey.replace(/_/g, ' ')}</label>
+                        {['entite', 'operateur', 'produit', 'etatAbonnement'].includes(innerKey) ? (
+                          <CustomDropdown
+                            name={innerKey}
+                            value={isEditing ? currentPack[innerKey] : newPack[innerKey]}
+                            options={options[innerKey] || []}
+                            onChange={innerKey === 'produit' ? handleProduitChange : handleChange}
+                            isProduit={innerKey === 'produit'}
                           />
-                      )}
-                    </td>
+                        ) : (
+                          <input
+                            type={innerKey.startsWith('date') ? 'date' : 'text'}
+                            name={innerKey}
+                            value={isEditing ? currentPack[innerKey] : newPack[innerKey]}
+                            onChange={handleChange}
+                            className="input-field"
+                            placeholder={innerKey === 'numero' ? 'eg: 212XXXXXXXXX' : `Entrer ${innerKey.replace(/_/g, ' ')}`}
+                          />
+                        )}
+                      </td>
+                    )
                   ))}
                 </tr>
               )
             ))}
+
+            {(isEditing ? currentPack.produit : newPack.produit) && subfieldOptions.length > 0 && (
+              <>
+                <tr>
+                  <td colSpan="3">
+                    <label className="telecom-pack-form-label">Produit2</label>
+                    <CustomDropdown
+                      name="produit2"
+                      value={isEditing ? currentPack.produit2 : subfield}
+                      options={subfieldOptions}
+                      onChange={handleSubfieldChange}
+                      placeholder="Select Produit2"
+                    />
+                  </td>
+                </tr>
+              </>
+            )}
           </tbody>
         </table>
         {isEditing ? (
@@ -276,8 +394,13 @@ const TelecomPack = () => {
           <button className="add-button" onClick={handleAddPack}>Add Pack</button>
         )}
       </div>
+
       <div className="table-container">
-        <Table columns={columns} data={data} />
+        {telecomPacks.length > 0 ? (
+          <Table columns={columns} data={telecomPacks} />
+        ) : (
+          <div>Loading...</div>
+        )}
       </div>
     </div>
   );
@@ -302,7 +425,7 @@ const SelectColumnFilter = ({ column: { filterValue, setFilter, preFilteredRows,
       onChange={handleChange}
       options={options}
       isMulti
-      placeholder="Filter by..."
+      placeholder="Filtrer par..."
       className="filter-select"
     />
   );
@@ -372,14 +495,20 @@ const CustomDropdown = ({ name, value, options, onChange, placeholder }) => {
     setIsOpen(false);
   };
 
+  const handleInputChange = (e) => {
+    const { value } = e.target;
+    onChange({ target: { name, value } });
+  };
+
   return (
     <div className="dropdown-container">
       <input
         type="text"
         name={name}
         value={value}
-        onChange={onChange}
+        onChange={handleInputChange}
         placeholder={placeholder}
+        className="input-field"
       />
       <div className="dropdown-arrow" onClick={() => setIsOpen(!isOpen)}>
         ▼

@@ -9,6 +9,7 @@ const AdminDashboard = () => {
   const [userHistory, setUserHistory] = useState([]);
   const [modificationHistory, setModificationHistory] = useState([]);
   const [telecomModificationHistory, setTelecomModificationHistory] = useState([]);
+  const [telephoneLineModificationHistory, setTelephoneLineModificationHistory] = useState([]);
 
   const handleNavigation = (path) => {
     history.push(path);
@@ -18,11 +19,35 @@ const AdminDashboard = () => {
     fetchUserHistory();
     fetchModificationHistory();
     fetchTelecomModificationHistory();
+    fetchTelephoneLineModificationHistory(); // Add this line
   }, []);
+
+  const fetchTelephoneLineModificationHistory = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/telephone-lines/admin/telephone-line-modifications', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Fetched Telephone Line Modifications:', data);
+        setTelephoneLineModificationHistory(data);
+      } else {
+        console.error('Failed to fetch telephone line modification history');
+      }
+    } catch (error) {
+      console.error('Error fetching telephone line modification history:', error);
+    }
+  };
+
 
   const fetchUserHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/users/admin/user-history', { 
+      const response = await fetch('http://localhost:5000/api/users/admin/user-history', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +142,7 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <div className="admin-dashboard-content">
         <h1 className="admin-dashboard-title">Admin Dashboard</h1>
-        
+
         <div className="admin-user-history-section">
           <h2>User Login History</h2>
           {userHistory.length > 0 ? (
@@ -180,7 +205,7 @@ const AdminDashboard = () => {
             <p>No IT equipment modification history available.</p>
           )}
         </div>
-        
+
         <div className="admin-modification-history-section">
           <h2>Telecom Pack Modification History</h2>
           {telecomModificationHistory.length > 0 ? (
@@ -214,6 +239,40 @@ const AdminDashboard = () => {
             <p>No Telecom Pack modification history available.</p>
           )}
         </div>
+        <div className="admin-modification-history-section">
+          <h2>Telephone Line Modification History</h2>
+          {telephoneLineModificationHistory.length > 0 ? (
+            <div className="admin-table-container">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Modification Time</th>
+                    <th>Field</th>
+                    <th>Old Value</th>
+                    <th>New Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {telephoneLineModificationHistory.map((modification, index) => (
+                    <tr key={index}>
+                      <td>{modification.User.fullName}</td>
+                      <td>{modification.User.email}</td>
+                      <td>{formatDate(modification.modifiedAt)}</td>
+                      <td>{modification.field}</td>
+                      <td>{modification.oldValue ? modification.oldValue : 'N/A'}</td>
+                      <td>{modification.newValue ? modification.newValue : 'N/A'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p>No Telephone Line modification history available.</p>
+          )}
+        </div>
+
       </div>
     </div>
   );

@@ -121,7 +121,7 @@ const TelecomPackView = () => {
         onChange={handleChange}
         options={options}
         isMulti
-        placeholder={'Filter by...'}
+        placeholder={'Filtrer par...'}
         className="telecompack-view-filter-select"
       />
     );
