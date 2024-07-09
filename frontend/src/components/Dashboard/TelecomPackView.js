@@ -48,9 +48,9 @@ const TelecomPackView = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-
+    
         const data = response.data.map(pack => {
-          const {createdat, updatedat,id, ...rest } = pack; // Exclude createdAt and updatedAt here
+          const { createdat, updatedat, id, produit, ...rest } = pack; // Exclude createdAt, updatedAt, id, and produit here
           const formattedPack = setDefaultValues(rest);
           return {
             ...formattedPack,
@@ -59,11 +59,11 @@ const TelecomPackView = () => {
             dateEtat: formatDate(formattedPack.dateEtat),
           };
         });
-
+    
         setTelecomPacks(data);
-
+    
         const headers = Object.keys(data[0] || {});
-        const filteredHeaders = headers.filter(header => !['createdat', 'updatedat'].includes(header)); // Exclude createdAt and updatedAt here
+        const filteredHeaders = headers.filter(header => !['createdat', 'updatedat', 'produit'].includes(header)); // Exclude createdAt, updatedAt, and produit here
         const maxWidths = filteredHeaders.reduce((acc, header) => {
           const headerWidth = measureTextWidth(header.replace(/_/g, ' '));
           const maxLength = Math.max(
@@ -73,7 +73,7 @@ const TelecomPackView = () => {
           acc[header] = maxLength;
           return acc;
         }, {});
-
+    
         const cols = [
           {
             Header: '#',
@@ -89,14 +89,13 @@ const TelecomPackView = () => {
             width: maxWidths[header] + 20,
           })),
         ];
-
+    
         setColumns(cols);
       } catch (error) {
         console.error('Error fetching Telecom Packs:', error);
         alert('Error fetching Telecom Packs: ' + error.message);
       }
-    };
-
+    };    
     fetchTelecomPacks();
   }, []);           
 
@@ -131,20 +130,20 @@ const TelecomPackView = () => {
     const filteredData = data.filter(item =>
       item.entite && item.entite !== '------' &&
       item.operateur && item.operateur !== '------' &&
-      item.produit && item.produit !== '------' &&
+      item.produit2 && item.produit2 !== '------' &&
       item.etatAbonnement && item.etatAbonnement !== '------'
     );
     return filteredData;
   };
 
   const exportToExcel = (data) => {
-    const filteredData = data.map(({ createdat, updatedat,id, ...rest }) => rest); // Exclude createdAt and updatedAt here
+    const filteredData = data.map(({ createdat, updatedat, id, produit, ...rest }) => rest); // Exclude createdAt, updatedAt, id, and produit here
     const ws = XLSX.utils.json_to_sheet(filteredData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "TelecomPacks");
-    XLSX.writeFile(wb, "TelecomPacks.xlsx");
-  };         
-
+    XLSX.writeFile(wb, "Parc_Telecom.xlsx");
+  };
+  
   const Table = ({ columns, data }) => {
     const defaultColumn = {
       minWidth: 30,

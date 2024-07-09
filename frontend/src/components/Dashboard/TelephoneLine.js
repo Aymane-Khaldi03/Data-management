@@ -15,6 +15,7 @@ const setDefaultValues = (data, defaultValue = '------') => {
     })
   );
 };
+
 const getCustomHeaderName = (header) => {
   const customNames = {
     numero_de_gsm: 'Numero de GSM',
@@ -54,6 +55,10 @@ const TelephoneLine = () => {
   const [currentLine, setCurrentLine] = useState(null);
   const history = useHistory();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10); // Define the page size
+  const [totalPages, setTotalPages] = useState(1);
+
   useEffect(() => {
     const fetchTelephoneLines = async () => {
       try {
@@ -64,6 +69,7 @@ const TelephoneLine = () => {
         });
         const data = response.data.map(line => setDefaultValues(line));
         setTelephoneLines(data);
+        setTotalPages(Math.ceil(data.length / pageSize));
       } catch (error) {
         console.error('Error fetching Telephone Lines:', error.message);
         alert('Failed to fetch telephone lines: ' + error.message);
@@ -92,7 +98,7 @@ const TelephoneLine = () => {
 
     fetchTelephoneLines();
     fetchDropdownOptions();
-  }, []);
+  }, [currentPage]);
 
   const handleAddLine = async () => {
     if (!newLine.numero_de_gsm) {
@@ -119,6 +125,7 @@ const TelephoneLine = () => {
         categorie: '',
         poste_GSM: '',
       });
+      setTotalPages(Math.ceil([...telephoneLines, addedLine].length / pageSize));
     } catch (error) {
       console.error('Error adding Telephone Line:', error.message);
       alert('Failed to add telephone line: ' + error.message);
@@ -133,6 +140,7 @@ const TelephoneLine = () => {
         },
       });
       setTelephoneLines((prevLines) => prevLines.filter(line => line.id !== id));
+      setTotalPages(Math.ceil((telephoneLines.length - 1) / pageSize));
     } catch (error) {
       console.error('Error deleting Telephone Line:', error.message);
       alert('Failed to delete telephone line: ' + error.message);
@@ -156,6 +164,7 @@ const TelephoneLine = () => {
       setTelephoneLines(telephoneLines.map(line => line.id === updatedLine.id ? updatedLine : line));
       setIsEditing(false);
       setCurrentLine(null);
+      setTotalPages(Math.ceil(telephoneLines.length / pageSize));
     } catch (error) {
       console.error('Error updating Telephone Line:', error.message);
       alert('Failed to update telephone line: ' + error.message);
@@ -180,17 +189,19 @@ const TelephoneLine = () => {
   const columns = React.useMemo(() => [
     {
       Header: '#',
-      accessor: (row, i) => i + 1,
+      accessor: (row, i) => (currentPage - 1) * pageSize + i + 1,
       disableFilters: true,
       disableSortBy: true,
+      width: 50, // Set a specific width if needed
     },
     {
       Header: 'Actions',
       accessor: 'actions',
       disableFilters: true,
       disableSortBy: true,
+      width: 120, // Set a specific width for the Actions column
       Cell: ({ row }) => (
-        <div>
+        <div className="actions-column">
           <button className="modify-button" onClick={() => handleModifyLine(row.original)}>Modify</button>
           <button className="delete-button" onClick={() => handleDeleteLine(row.original.id)}>Delete</button>
         </div>
@@ -201,9 +212,13 @@ const TelephoneLine = () => {
       accessor: key,
       Filter: SelectColumnFilter,
     })),
-  ], [newLine]);
+  ], [newLine, currentPage, pageSize]);  
 
-  const data = React.useMemo(() => telephoneLines, [telephoneLines]);
+  const paginatedData = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return telephoneLines.slice(startIndex, endIndex);
+  }, [telephoneLines, currentPage, pageSize]);
 
   return (
     <div className="telephone-line-manager">
@@ -252,7 +267,27 @@ const TelephoneLine = () => {
         )}
       </div>
       <div className="table-container">
-        <Table columns={columns} data={data} />
+        <Table columns={columns} data={paginatedData} />
+      </div>
+      <div className="pagination-controls">
+        <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
+          Précédent
+        </button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
+          Suivant
+        </button>
+      </div>
+      <div className="page-number-navigation">
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i + 1}
+            className={`page-number ${currentPage === i + 1 ? 'active' : ''}`}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -338,6 +373,7 @@ const Table = ({ columns, data }) => {
     </table>
   );
 };
+
 const CustomDropdown = ({ name, value, options, onChange, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -370,4 +406,5 @@ const CustomDropdown = ({ name, value, options, onChange, placeholder }) => {
     </div>
   );
 };
+
 export default TelephoneLine;

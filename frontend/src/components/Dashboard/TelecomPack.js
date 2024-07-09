@@ -75,8 +75,10 @@ const TelecomPack = () => {
   const history = useHistory();
   const [subfieldOptions, setSubfieldOptions] = useState([]);
   const [subfield, setSubfield] = useState('');
-  ///
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(250); // Define the page size
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchDropdownOptions = async () => {
     try {
@@ -121,7 +123,10 @@ const TelecomPack = () => {
           const entiteB = b.entite.match(/\d+/);
           return entiteA - entiteB;
         });
-        if (isMounted) setTelecomPacks(data);
+        if (isMounted) {
+          setTelecomPacks(data);
+          setTotalPages(Math.ceil(data.length / pageSize));
+        }
       } catch (error) {
         console.error('Error fetching Telecom Packs:', error.message);
         alert('Failed to fetch telecom packs: ' + error.message);
@@ -133,7 +138,7 @@ const TelecomPack = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [currentPage]);
 
   const handleAddPack = async () => {
     if (!newPack.entite) {
@@ -143,14 +148,12 @@ const TelecomPack = () => {
 
     try {
       const formattedPack = setDefaultValues({ ...newPack });
-      console.log('Adding pack with produit2:', formattedPack.produit2); // Debugging statement
       const response = await axios.post('http://localhost:5000/api/telecom-packs', formattedPack, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
       const addedPack = response.data;
-      console.log('Added pack response:', addedPack); // Debugging statement
       setTelecomPacks([...telecomPacks, addedPack]);
       setNewPack({
         entite: '',
@@ -166,12 +169,12 @@ const TelecomPack = () => {
       });
       setSubfield('');
       setSubfieldOptions([]);
+      setTotalPages(Math.ceil([...telecomPacks, addedPack].length / pageSize));
     } catch (error) {
       console.error('Error adding Telecom Pack:', error.message);
       alert('Failed to add telecom pack: ' + error.message);
     }
   };
-
 
   const handleModifyPack = (pack) => {
     setIsEditing(true);
@@ -189,19 +192,18 @@ const TelecomPack = () => {
   const handleUpdatePack = async () => {
     try {
       const formattedPack = setDefaultValues({ ...currentPack });
-      console.log('Updating pack with produit2:', formattedPack.produit2); // Debugging statement
       const response = await axios.put(`http://localhost:5000/api/telecom-packs/${currentPack.id}`, formattedPack, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
       const updatedPack = response.data;
-      console.log('Updated pack response:', updatedPack); // Debugging statement
       setTelecomPacks(telecomPacks.map(pack => pack.id === updatedPack.id ? updatedPack : pack));
       setIsEditing(false);
       setCurrentPack(null);
       setSubfield('');
       setSubfieldOptions([]);
+      setTotalPages(Math.ceil(telecomPacks.length / pageSize));
     } catch (error) {
       console.error('Error updating Telecom Pack:', error.message);
       alert('Failed to update telecom pack: ' + error.message);
@@ -260,7 +262,6 @@ const TelecomPack = () => {
     setSubfield(value);
   };
 
-
   const handleDeletePack = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/telecom-packs/${id}`, {
@@ -269,6 +270,7 @@ const TelecomPack = () => {
         },
       });
       setTelecomPacks(telecomPacks.filter(pack => pack.id !== id));
+      setTotalPages(Math.ceil((telecomPacks.length - 1) / pageSize));
     } catch (error) {
       console.error('Error deleting Telecom Pack:', error.message);
       alert('Failed to delete telecom pack: ' + error.message);
@@ -278,7 +280,7 @@ const TelecomPack = () => {
   const columns = React.useMemo(() => [
     {
       Header: '#',
-      accessor: (row, i) => i + 1,
+      accessor: (row, i) => (currentPage - 1) * pageSize + i + 1,
       disableFilters: true,
       disableSortBy: true,
     },
@@ -306,14 +308,6 @@ const TelecomPack = () => {
       Filter: SelectColumnFilter,
       placeholder: 'Filtrer par'
     },
-    /*
-    {
-      Header: 'produit',
-      accessor: 'produit',
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par Produit'
-    },
-    */
     {
       Header: 'Sous-Produit',
       accessor: 'produit2',
@@ -356,9 +350,13 @@ const TelecomPack = () => {
       Filter: SelectColumnFilter,
       placeholder: 'Filtrer par'
     },
-  ], []);
+  ], [currentPage, pageSize]);
 
-  const data = React.useMemo(() => telecomPacks, [telecomPacks]);
+  const paginatedData = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return telecomPacks.slice(startIndex, endIndex);
+  }, [telecomPacks, currentPage, pageSize]);
 
   return (
     <div className="telecom-pack-manager">
@@ -493,10 +491,30 @@ const TelecomPack = () => {
 
       <div className="table-container">
         {telecomPacks.length > 0 ? (
-          <Table columns={columns} data={telecomPacks} />
+          <Table columns={columns} data={paginatedData} />
         ) : (
-          <div></div> // Remove the "Loading..." feature here
+          <div>No data available</div>
         )}
+      </div>
+      <div className="pagination-controls">
+        <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
+          Précédent
+        </button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
+          Suivant
+        </button>
+      </div>
+      <div className="page-number-navigation">
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i + 1}
+            className={`page-number ${currentPage === i + 1 ? 'active' : ''}`}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -538,7 +556,6 @@ const Table = ({ columns, data }) => {
     {
       columns,
       data,
-      disableMultiSort: false // Allow multiple column sorting
     },
     useFilters,
     useSortBy

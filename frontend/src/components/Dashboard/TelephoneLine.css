@@ -1,328 +1,358 @@
 .telephone-line-manager {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px;
-    width: 100%;
-    overflow: hidden;
-  }
-  
-  /* title */
-  .telephone-line-manager h1 { 
-    margin-bottom: 30px;
-    margin-top: -67px;
-    font-size: 50px;
-  }
-  
-  .add-line {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 20px;
-    width: 100%;
-    overflow-x: auto;
-    border: 4px solid black;
-    background-color: rgba(128, 128, 128, 0.381);
-  }
-  
-  .telephone-line-form-table {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    width: 100%;
-    border-radius: 4px;
-  }
-  
-  .telephone-line-form-table tr {
-    flex-wrap: wrap;
-    width: 80%;
-  }
-  
-  .telephone-line-form-table td {
-    flex: 1 1 calc(30% - 20px); /* Three items per row with space between */
-    margin: 10px;
-    padding: 12px;
-    box-sizing: border-box;
-  }
-  
-  .telephone-line-form-label {
-    font-weight: bold;
-    display: block;
-    font-size: 15px;
-    color: #4D2C21;
-  }
-  
-  .dropdown-container,
-  .input-container {
-    position: relative;
-  }
-  
-  .dropdown-container input,
-  .input-container input,
-  .input-field {
-    width: 100%;
-    padding: 14px;
-    border: 2px solid black;
-    border-radius: 7px;
-    background-color: white;
-    font-weight: bold;
-  }
-  
-  .dropdown-container .dropdown-arrow {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    z-index: 1;
-    background-color: white;
-    padding: 0 5px;
-  }
-  
-  .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: auto;
-    right: 0;
-    background-color: white;
-    border: 1px solid black;
-    z-index: 1000;
-    width: 90%;
-  }
-  
-  .dropdown-option {
-    padding: 10px;
-    cursor: pointer;
-  }
-  
-  .dropdown-option:hover {
-    background-color: #f2f2f2;
-  }
-  
-  .add-line button {
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    background-color: #0618bb;
-    color: whitesmoke;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 0.5px;
-    margin-bottom: 1.5px;
-    align-self: center;
-    border: 4px solid black;
-    font-weight: bold;
-  }
-  
-  .add-line button:hover {
-    background-color: #0056b3;
-  }
-  
-  .table-container {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: auto; /* Enable vertical scrolling */
-    max-height: 500px; /* Set a fixed height for the table container */
-  }
-  
-  .data-table {
-    width: 100%; /* Make the table take full width */
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    background-color: white;
-    font-size: 11px;
-  }
-  
-  .data-table th,
-  .data-table td {
-    border: 1px solid #ccc;
-    padding: 12px;
-    text-align: left;
-    white-space: nowrap;
-  }
-  
-  .data-table th {
-    background-color: #f2f2f2;
-    cursor: pointer;
-    font-size: 12px;
-  }
-  
-  .data-table .left-column {
-    background-color: #f2f2f2;
-    font-weight: bold;
-    font-size: 13px;
-  }
-  
-  .data-table .right-column {
-    background-color: #e6f7ff;
-    font-weight: bold;
-    font-size: 11px;
-  }
-  
-  .data-table .actions-column {
-    text-align: center;
-  }
-  
-  .data-table button {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin: 5px;
-  }
-  
-  .data-table .modify-button {
-    background-color: #4CAF50;
-    color: white;
-    font-size: 15px;
-  }
-  
-  .data-table .modify-button:hover {
-    background-color: #45a049;
-  }
-  
-  .data-table .delete-button {
-    background-color: #f44336;
-    color: white;
-    font-size: 15px;
-  }
-  
-  .data-table .delete-button:hover {
-    background-color: #d32f2f;
-  }
-  
-  .input-field::placeholder {
-    color: #ccc; /* Placeholder text color */
-    font-style: italic; /* Placeholder text style */
-    font-size: 11px;
-  }
-  .telephone-line-view-row-even {
-    background-color: #ffffff; /* White color for even rows */
-  }
-  
-  .telephone-line-view-row-odd {
-    background-color: #e6f7ff; /* Light blue color for odd rows */
-  }
-  
-  .telephone-line-modify-back-button {
-    margin-bottom: 9px;
-    padding: 10px 20px;
-    background-color: #6c2d00;
-    border: 4px solid black;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    margin-left: -1125px;
-    margin-top: 5px;
-  }
-  
-  .telephone-line-modify-back-button:hover {
-    background-color: hsla(20, 100%, 50%, 0.714); /* Darker shade for hover effect */
-    transform: scale(1.05); /* Slightly increase the size */
-  }
-  
-  .filter-select {
-    width: 100%;
-    padding: 4px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .filter-select__control {
-    width: 100%;
-    border: 1px solid #ccc;
-  }
-  
-  .filter-select__menu {
-    width: 100%;
-  }
-  
-  .data-table th.asc span:after {
-    content: '▲';
-    margin-left: 5px;
-  }
-  
-  .data-table th.desc span:after {
-    content: '▼';
-    margin-left: 5px;
-  }
-  
-  .telephoneline-view-container {
-    padding: 20px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 10px;
-    width: 100%;
-    overflow: hidden;
-  }
-  
-  .telephoneline-view-table-container {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: auto; /* Enable vertical scrolling */
-    max-height: 110vh; /* Increase max-height to 90% of the viewport height */
-    white-space: nowrap; /* Ensure table rows do not wrap */
-  }
-  
-  .telephoneline-view-data-table {
-    width: 100%; /* Set the table width to 100% */
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    background-color: white;
-    border-radius: 4px;
-  }
-  
-  .telephoneline-view-data-table th, .telephoneline-view-data-table td {
-    border: 1px solid #ccc;
-    padding: 17px;
-    text-align: left;
-    white-space: nowrap;
-    font-size: 12px;
-  }
-  
-  .telephoneline-view-data-table th {
-    background-color: #f2f2f2;
-    cursor: default;
-    font-size: 12px;
-  }
-  
-  .telephoneline-view-row-even {
-    background-color: #ffffff;
-    margin-left: 2px;
-  }
-  
-  .telephoneline-view-row-odd {
-    background-color: #e6f7ff;
-    margin-left: 2px;
-  }
-  
-  .telephoneline-view-data-table th:first-child, 
-  .telephoneline-view-data-table td:first-child {
-    width: 50px; /* Match the width you set in the column definition */
-  }
-  
-  .export-button {
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    background-color: #4CAF50;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-bottom: 20px;
-    align-self: center;
-    font-weight: bold;
-    border: 4px solid black;
-  }
-  
-  .export-button:hover {
-    background-color: #45a049;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* title */
+.telephone-line-manager h1 {
+  margin-bottom: 30px;
+  margin-top: -67px;
+  font-size: 50px;
+}
+
+.add-line {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+  width: 100%;
+  overflow-x: auto;
+  border: 4px solid black;
+  background-color: rgba(128, 128, 128, 0.381);
+}
+
+.telephone-line-form-table {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  width: 100%;
+  border-radius: 4px;
+}
+
+.telephone-line-form-table tr {
+  flex-wrap: wrap;
+  width: 80%;
+}
+
+.telephone-line-form-table td {
+  flex: 1 1 calc(30% - 20px);
+  /* Three items per row with space between */
+  margin: 10px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.telephone-line-form-label {
+  font-weight: bold;
+  display: block;
+  font-size: 15px;
+  color: #4D2C21;
+}
+
+.dropdown-container,
+.input-container {
+  position: relative;
+}
+
+.dropdown-container input,
+.input-container input,
+.input-field {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid black;
+  border-radius: 7px;
+  background-color: white;
+  font-weight: bold;
+}
+
+.dropdown-container .dropdown-arrow {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 1;
+  background-color: white;
+  padding: 0 5px;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: auto;
+  right: 0;
+  background-color: white;
+  border: 1px solid black;
+  z-index: 1000;
+  width: 90%;
+}
+
+.dropdown-option {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.dropdown-option:hover {
+  background-color: #f2f2f2;
+}
+
+.add-line button {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #0618bb;
+  color: whitesmoke;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 0.5px;
+  margin-bottom: 1.5px;
+  align-self: center;
+  border: 4px solid black;
+  font-weight: bold;
+}
+
+.add-line button:hover {
+  background-color: #0056b3;
+}
+
+.table-container {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  /* Enable vertical scrolling */
+  max-height: 500px;
+  /* Set a fixed height for the table container */
+}
+
+.data-table {
+  width: 100%;
+  /* Make the table take full width */
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: white;
+  font-size: 12px;
+}
+
+.data-table th,
+.data-table td {
+  border: 1px solid #ccc;
+  padding: 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.data-table th {
+  background-color: #f2f2f2;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.data-table .left-column {
+  background-color: #f2f2f2;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.data-table .right-column {
+  background-color: #e6f7ff;
+  font-weight: bold;
+  font-size: 11px;
+}
+
+.data-table .actions-column {
+  text-align: center;
+  width: 50%;
+}
+
+.data-table button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 5px;
+}
+
+.data-table .modify-button {
+  background-color: #4CAF50;
+  color: white;
+  font-size: 15px;
+}
+
+.data-table .modify-button:hover {
+  background-color: #45a049;
+}
+
+.data-table .delete-button {
+  background-color: #f44336;
+  color: white;
+  font-size: 15px;
+}
+
+.data-table .delete-button:hover {
+  background-color: #d32f2f;
+}
+
+.input-field::placeholder {
+  color: #ccc;
+  /* Placeholder text color */
+  font-style: italic;
+  /* Placeholder text style */
+  font-size: 11px;
+}
+
+.telephone-line-view-row-even {
+  background-color: #ffffff;
+  /* White color for even rows */
+}
+
+.telephone-line-view-row-odd {
+  background-color: #e6f7ff;
+  /* Light blue color for odd rows */
+}
+
+.telephone-line-modify-back-button {
+  margin-bottom: 9px;
+  padding: 10px 20px;
+  background-color: #6c2d00;
+  border: 4px solid black;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  margin-left: -1125px;
+  margin-top: 5px;
+}
+
+.telephone-line-modify-back-button:hover {
+  background-color: hsla(20, 100%, 50%, 0.714);
+  /* Darker shade for hover effect */
+  transform: scale(1.05);
+  /* Slightly increase the size */
+}
+
+.filter-select {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.filter-select__control {
+  width: 100%;
+  border: 1px solid #ccc;
+}
+
+.filter-select__menu {
+  width: 100%;
+}
+
+.data-table th.asc span:after {
+  content: '▲';
+  margin-left: 5px;
+}
+
+.data-table th.desc span:after {
+  content: '▼';
+  margin-left: 5px;
+}
+
+.telephoneline-view-container {
+  padding: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.telephoneline-view-table-container {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  /* Enable vertical scrolling */
+  max-height: 110vh;
+  /* Increase max-height to 90% of the viewport height */
+  white-space: nowrap;
+  /* Ensure table rows do not wrap */
+}
+
+.telephoneline-view-data-table {
+  width: 100%;
+  /* Set the table width to 100% */
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: white;
+  border-radius: 4px;
+}
+
+.telephoneline-view-data-table th,
+.telephoneline-view-data-table td {
+  border: 1px solid #ccc;
+  padding: 17px;
+  text-align: left;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.telephoneline-view-data-table th {
+  background-color: #f2f2f2;
+  cursor: default;
+  font-size: 12px;
+}
+
+.telephoneline-view-row-even {
+  background-color: #ffffff;
+  margin-left: 2px;
+}
+
+.telephoneline-view-row-odd {
+  background-color: #e6f7ff;
+  margin-left: 2px;
+}
+
+.telephoneline-view-data-table th:first-child,
+.telephoneline-view-data-table td:first-child {
+  width: 50px;
+  /* Match the width you set in the column definition */
+}
+
+.export-button {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-bottom: 20px;
+  align-self: center;
+  font-weight: bold;
+  border: 4px solid black;
+}
+
+.export-button:hover {
+  background-color: #45a049;
+}
+
+.telephone-line-view-data-table th.actions-column,
+.telephone-line-view-data-table td.actions-column {
+  width: 10%;
+  /* Match the width you set in the column definition */
+  text-align: center;
+  /* Center the content if needed */
+}
+
+.data-table .actions-column button {
+  font-size: 15px;
+  /* Adjust the font size to fit the smaller width */
+}
