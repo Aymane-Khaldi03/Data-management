@@ -154,6 +154,7 @@ router.get('/admin/it-equipment-modifications', authenticate, async (req, res) =
   }
 });
 
+// Add this route for resetting IT equipment modification history
 router.delete('/admin/it-equipment-modifications', authenticate, async (req, res) => {
   try {
     await ITEquipmentModification.destroy({
@@ -162,10 +163,11 @@ router.delete('/admin/it-equipment-modifications', authenticate, async (req, res
     });
     res.status(204).send();
   } catch (err) {
-    console.error('Error resetting modification history:', err.message);
+    console.error('Error resetting IT equipment modification history:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // Get unique values
 router.get('/unique-values/:field', authenticate, async (req, res) => {

@@ -44,7 +44,6 @@ const AdminDashboard = () => {
     }
   };
 
-
   const fetchUserHistory = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/users/admin/user-history', {
@@ -111,9 +110,10 @@ const AdminDashboard = () => {
     }
   };
 
+
   const handleResetModificationHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/telecom-packs/admin/telecom-pack-modifications', {
+      const response = await fetch('http://localhost:5000/api/admin/it-equipment-modifications', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -122,7 +122,7 @@ const AdminDashboard = () => {
       });
 
       if (response.ok) {
-        setTelecomModificationHistory([]);
+        setModificationHistory([]); // Clear the modification history in the state
         console.log('Modification history reset successfully');
       } else {
         console.error('Failed to reset modification history');
@@ -131,6 +131,48 @@ const AdminDashboard = () => {
       console.error('Error resetting modification history:', error);
     }
   };
+  const handleResetTelecomModificationHistory = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/telecom-packs/admin/telecom-pack-modifications', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+  
+      if (response.ok) {
+        setTelecomModificationHistory([]);
+        console.log('Telecom Pack modification history reset successfully');
+      } else {
+        console.error('Failed to reset Telecom Pack modification history');
+      }
+    } catch (error) {
+      console.error('Error resetting Telecom Pack modification history:', error);
+    }
+  };
+  
+  const handleResetTelephoneLineModificationHistory = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/telephone-lines/admin/telephone-line-modifications', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+  
+      if (response.ok) {
+        setTelephoneLineModificationHistory([]);
+        console.log('Telephone Line modification history reset successfully');
+      } else {
+        console.error('Failed to reset Telephone Line modification history');
+      }
+    } catch (error) {
+      console.error('Error resetting Telephone Line modification history:', error);
+    }
+  };
+  
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -173,7 +215,7 @@ const AdminDashboard = () => {
 
         <div className="admin-modification-history-section">
           <h2>IT Equipment Modification History</h2>
-          <button onClick={handleResetModificationHistory} className="reset-button">Reset History</button>
+          <button onClick={handleResetModificationHistory} className="reset-button">Reset IT Equipment History</button>
           {modificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
@@ -208,6 +250,7 @@ const AdminDashboard = () => {
 
         <div className="admin-modification-history-section">
           <h2>Telecom Pack Modification History</h2>
+          <button onClick={handleResetTelecomModificationHistory} className="reset-button">Reset Telecom Pack History</button>
           {telecomModificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
@@ -241,6 +284,7 @@ const AdminDashboard = () => {
         </div>
         <div className="admin-modification-history-section">
           <h2>Telephone Line Modification History</h2>
+          <button onClick={handleResetTelephoneLineModificationHistory} className="reset-button">Reset Telephone Line History</button>
           {telephoneLineModificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">

@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 const TelecomPack = require('./TelecomPack');
-const User = require('./user'); // Assuming you have a User model
+const User = require('./user');
 
 const TelecomPackModification = sequelize.define('TelecomPackModification', {
   id: {
@@ -12,10 +12,18 @@ const TelecomPackModification = sequelize.define('TelecomPackModification', {
   telecomPackId: {
     type: DataTypes.UUID,
     allowNull: false,
+    references: {
+      model: TelecomPack,
+      key: 'id',
+    },
   },
   userId: {
     type: DataTypes.UUID,
     allowNull: false,
+    references: {
+      model: User,
+      key: 'id',
+    },
   },
   field: {
     type: DataTypes.STRING,
@@ -33,6 +41,8 @@ const TelecomPackModification = sequelize.define('TelecomPackModification', {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   },
+}, {
+  tableName: 'TelecomPackModifications', // Specify the correct table name
 });
 
 TelecomPackModification.belongsTo(TelecomPack, { foreignKey: 'telecomPackId' });

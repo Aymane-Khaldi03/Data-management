@@ -17,25 +17,62 @@ router.post('/', authenticate, telecomPackController.createTelecomPack);
 router.get('/:id', authenticate, telecomPackController.getTelecomPackById);
 
 // Update a Telecom Pack
-router.put('/:id', authenticate, telecomPackController.updateTelecomPack);
+router.put('/:id', authenticate, async (req, res) => {
+  try {
+    const telecomPack = await TelecomPack.findByPk(req.params.id);
+    if (!telecomPack) {
+      console.error(`Telecom Pack with ID ${req.params.id} not found`);
+      return res.status(404).json({ error: 'Telecom Pack not found' });
+    }
 
+    const updatedData = req.body;
+    const changes = [];
+
+    for (const key in updatedData) {
+      if (key !== 'createdAt' && key !== 'updatedAt' && telecomPack[key] !== updatedData[key]) {
+        changes.push({
+          telecomPackId: telecomPack.id,
+          userId: req.user.id,
+          field: key,
+          oldValue: telecomPack[key] ? telecomPack[key].toString() : null,
+          newValue: updatedData[key] ? updatedData[key].toString() : null,
+          modifiedAt: new Date(),
+        });
+      }
+    }
+
+    if (changes.length > 0) {
+      console.log('Changes to be logged:', changes);
+      await TelecomPackModification.bulkCreate(changes);
+    }
+
+    const updatedTelecomPack = await telecomPack.update(updatedData);
+    res.json(updatedTelecomPack);
+  } catch (err) {
+    console.error('Error updating Telecom Pack:', err.message);
+    console.error('Detailed error:', err); // Log the full error
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Delete a Telecom Pack
 router.delete('/:id', authenticate, telecomPackController.deleteTelecomPack);
 
 // Get Telecom Pack modification history
+// Get Telecom Pack modification history
 router.get('/admin/telecom-pack-modifications', authenticate, async (req, res) => {
   try {
     const modifications = await TelecomPackModification.findAll({
       include: [
-        { model: TelecomPack },
+        { model: TelecomPack, attributes: [] }, // Include only necessary attributes
         { model: User, attributes: ['fullName', 'email'] }
       ],
       order: [['modifiedAt', 'DESC']],
     });
+    console.log('Fetched Telecom Pack Modifications:', JSON.stringify(modifications, null, 2));
     res.json(modifications);
   } catch (error) {
-    console.error('Error fetching modification history:', error.message);
+    console.error('Error fetching Telecom Pack modification history:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
@@ -49,10 +86,12 @@ router.delete('/admin/telecom-pack-modifications', authenticate, async (req, res
     });
     res.status(204).send();
   } catch (error) {
-    console.error('Error resetting modification history:', error.message);
+    console.error('Error resetting Telecom Pack modification history:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 // Get distinct values for dropdowns
 router.get('/dropdown/:field', authenticate, async (req, res) => {
