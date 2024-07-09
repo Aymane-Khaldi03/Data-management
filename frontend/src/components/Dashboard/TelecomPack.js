@@ -60,13 +60,53 @@ const TelecomPack = () => {
     observation: ''
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [currentPack, setCurrentPack] = useState(null);
+  const [currentPack, setCurrentPack] = useState({
+    entite: '',
+    operateur: '',
+    produit: '',
+    produit2: '',
+    numero: '',
+    etatAbonnement: '',
+    dateAbonnement: '',
+    dateReengagement: '',
+    dateEtat: '',
+    observation: ''
+  });
   const history = useHistory();
   const [subfieldOptions, setSubfieldOptions] = useState([]);
   const [subfield, setSubfield] = useState('');
+  ///
+
+
+  const fetchDropdownOptions = async () => {
+    try {
+      const fields = ['entite', 'operateur', 'produit', 'etatAbonnement'];
+      const fetchedOptions = {};
+      for (const field of fields) {
+        const response = await axios.get(`http://localhost:5000/api/telecom-packs/dropdown/${field}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        const uniqueValues = Array.from(new Set(response.data.filter(value => value !== '')));
+        fetchedOptions[field] = uniqueValues;
+      }
+
+      // Ensure "DATA" is included in the produit options
+      if (!fetchedOptions.produit.includes("DATA")) {
+        fetchedOptions.produit.push("DATA");
+      }
+
+      setOptions(fetchedOptions);
+    } catch (error) {
+      console.error('Error fetching dropdown options:', error.message);
+      alert('Failed to fetch dropdown options: ' + error.message);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
+
     const fetchTelecomPacks = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/telecom-packs', {
@@ -88,26 +128,6 @@ const TelecomPack = () => {
       }
     };
 
-    const fetchDropdownOptions = async () => {
-      try {
-        const fields = ['entite', 'operateur', 'produit', 'etatAbonnement'];
-        const fetchedOptions = {};
-        for (const field of fields) {
-          const response = await axios.get(`http://localhost:5000/api/telecom-packs/dropdown/${field}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          });
-          const uniqueValues = Array.from(new Set(response.data.filter(value => value !== '')));
-          fetchedOptions[field] = uniqueValues;
-        }
-        setOptions(fetchedOptions);
-      } catch (error) {
-        console.error('Error fetching dropdown options:', error.message);
-        alert('Failed to fetch dropdown options: ' + error.message);
-      }
-    };
-
     fetchTelecomPacks();
     fetchDropdownOptions();
     return () => {
@@ -120,7 +140,7 @@ const TelecomPack = () => {
       alert('The "entite" field must be filled.');
       return;
     }
-  
+
     try {
       const formattedPack = setDefaultValues({ ...newPack });
       console.log('Adding pack with produit2:', formattedPack.produit2); // Debugging statement
@@ -151,6 +171,7 @@ const TelecomPack = () => {
       alert('Failed to add telecom pack: ' + error.message);
     }
   };
+
 
   const handleModifyPack = (pack) => {
     setIsEditing(true);
@@ -207,7 +228,7 @@ const TelecomPack = () => {
     const options = subfieldOptionsMap[value] || [];
     setSubfieldOptions(options);
     setSubfield(''); // Reset subfield when produit changes
-  
+
     if (isEditing) {
       setCurrentPack(prevState => ({
         ...prevState,
@@ -222,7 +243,7 @@ const TelecomPack = () => {
       }));
     }
   };
-  
+
   const handleSubfieldChange = (e) => {
     const { value } = e.target;
     if (isEditing) {
@@ -238,7 +259,7 @@ const TelecomPack = () => {
     }
     setSubfield(value);
   };
-  
+
 
   const handleDeletePack = async (id) => {
     try {
@@ -274,56 +295,66 @@ const TelecomPack = () => {
       ),
     },
     {
-      Header: 'entite',
+      Header: 'Entite',
       accessor: 'entite',
       Filter: SelectColumnFilter,
+      placeholder: 'Filtrer par'
     },
     {
-      Header: 'operateur',
+      Header: 'Operateur',
       accessor: 'operateur',
       Filter: SelectColumnFilter,
+      placeholder: 'Filtrer par'
     },
+    /*
     {
       Header: 'produit',
       accessor: 'produit',
       Filter: SelectColumnFilter,
-      Cell: ({ value }) => value || null,
+      placeholder: 'Filtrer par Produit'
     },
+    */
     {
-      Header: 'produit2',
+      Header: 'Sous-Produit',
       accessor: 'produit2',
       Filter: SelectColumnFilter,
-      Cell: ({ value }) => value || null,
+      placeholder: 'Filtrer par'
     },
     {
-      Header: 'numero',
+      Header: 'Numero',
       accessor: 'numero',
       Filter: SelectColumnFilter,
+      placeholder: 'Filtrer par'
     },
     {
-      Header: 'etatAbonnement',
+      Header: 'Etat d\'Abonnement',
       accessor: 'etatAbonnement',
       Filter: SelectColumnFilter,
+      placeholder: 'Filtrer par'
     },
     {
-      Header: 'dateAbonnement',
+      Header: 'Date d\'Abonnement',
       accessor: 'dateAbonnement',
       Filter: SelectColumnFilter,
+      placeholder: 'Filtrer par'
     },
     {
-      Header: 'dateReengagement',
+      Header: 'Date de Reengagement',
       accessor: 'dateReengagement',
       Filter: SelectColumnFilter,
+      placeholder: 'Filtrer par'
     },
     {
-      Header: 'dateEtat',
+      Header: 'Date d\'Etat',
       accessor: 'dateEtat',
       Filter: SelectColumnFilter,
+      placeholder: 'Filtrer par'
     },
     {
-      Header: 'observation',
+      Header: 'Observation',
       accessor: 'observation',
       Filter: SelectColumnFilter,
+      placeholder: 'Filtrer par'
     },
   ], []);
 
@@ -338,75 +369,140 @@ const TelecomPack = () => {
       <div className="add-pack">
         <table className="form-table telecom-pack-form-table">
           <tbody>
-            {Object.keys(newPack).map((key, index) => (
-              index % 3 === 0 && key !== 'produit2' && ( // Remove produit2 from the map
-                <tr key={index}>
-                  {Object.keys(newPack).slice(index, index + 3).map(innerKey => (
-                    innerKey !== 'produit2' && ( // Remove produit2 from the map
-                      <td key={innerKey}>
-                        <label className="telecom-pack-form-label">{innerKey.replace(/_/g, ' ')}</label>
-                        {['entite', 'operateur', 'produit', 'etatAbonnement'].includes(innerKey) ? (
-                          <CustomDropdown
-                            name={innerKey}
-                            value={isEditing ? currentPack[innerKey] : newPack[innerKey]}
-                            options={options[innerKey] || []}
-                            onChange={innerKey === 'produit' ? handleProduitChange : handleChange}
-                            isProduit={innerKey === 'produit'}
-                          />
-                        ) : (
-                          <input
-                            type={innerKey.startsWith('date') ? 'date' : 'text'}
-                            name={innerKey}
-                            value={isEditing ? currentPack[innerKey] : newPack[innerKey]}
-                            onChange={handleChange}
-                            className="input-field"
-                            placeholder={innerKey === 'numero' ? 'eg: 212XXXXXXXXX' : `Entrer ${innerKey.replace(/_/g, ' ')}`}
-                          />
-                        )}
-                      </td>
-                    )
-                  ))}
-                </tr>
-              )
-            ))}
-
+            <tr>
+              <td>
+                <label className="telecom-pack-form-label">Entite</label>
+                <CustomDropdown
+                  name="entite"
+                  value={isEditing ? currentPack.entite : newPack.entite}
+                  options={options.entite || []}
+                  onChange={handleChange}
+                  placeholder="Selectionner Entite"
+                />
+              </td>
+              <td>
+                <label className="telecom-pack-form-label">Operateur</label>
+                <CustomDropdown
+                  name="operateur"
+                  value={isEditing ? currentPack.operateur : newPack.operateur}
+                  options={options.operateur || []}
+                  onChange={handleChange}
+                  placeholder="Selectionner Operateur"
+                />
+              </td>
+              <td>
+                <label className="telecom-pack-form-label">Produit</label>
+                <CustomDropdown
+                  name="produit"
+                  value={isEditing ? currentPack.produit : newPack.produit}
+                  options={options.produit || []}
+                  onChange={handleProduitChange}
+                  placeholder="Selectionner Produit"
+                />
+              </td>
+            </tr>
             {(isEditing ? currentPack.produit : newPack.produit) && subfieldOptions.length > 0 && (
-              <>
-                <tr>
-                  <td colSpan="3">
-                    <label className="telecom-pack-form-label">Produit2</label>
-                    <CustomDropdown
-                      name="produit2"
-                      value={isEditing ? currentPack.produit2 : subfield}
-                      options={subfieldOptions}
-                      onChange={handleSubfieldChange}
-                      placeholder="Select Produit2"
-                    />
-                  </td>
-                </tr>
-              </>
+              <tr>
+                <td colSpan="3">
+                  <label className="telecom-pack-form-label">Sous-Produit</label>
+                  <CustomDropdown
+                    name="produit2"
+                    value={isEditing ? currentPack.produit2 : subfield}
+                    options={subfieldOptions}
+                    onChange={handleSubfieldChange}
+                    placeholder="Selectionner Produit2"
+                  />
+                </td>
+              </tr>
             )}
+            <tr>
+              <td>
+                <label className="telecom-pack-form-label">Numero de GSM</label>
+                <input
+                  type="text"
+                  name="numero"
+                  value={isEditing ? currentPack.numero : newPack.numero}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="eg: 212XXXXXXXXX"
+                />
+              </td>
+              <td>
+                <label className="telecom-pack-form-label">Etat d'abonnement</label>
+                <CustomDropdown
+                  name="etatAbonnement"
+                  value={isEditing ? currentPack.etatAbonnement : newPack.etatAbonnement}
+                  options={options.etatAbonnement || []}
+                  onChange={handleChange}
+                  placeholder="Selectionner Etat Abonnement"
+                />
+              </td>
+              <td>
+                <label className="telecom-pack-form-label">Date d'abonnement</label>
+                <input
+                  type="date"
+                  name="dateAbonnement"
+                  value={isEditing ? currentPack.dateAbonnement : newPack.dateAbonnement}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Entrer dateAbonnement"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label className="telecom-pack-form-label">Date de reengagement</label>
+                <input
+                  type="date"
+                  name="dateReengagement"
+                  value={isEditing ? currentPack.dateReengagement : newPack.dateReengagement}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Entrer dateReengagement"
+                />
+              </td>
+              <td>
+                <label className="telecom-pack-form-label">Date d'etat</label>
+                <input
+                  type="date"
+                  name="dateEtat"
+                  value={isEditing ? currentPack.dateEtat : newPack.dateEtat}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Entrer date d'etat"
+                />
+              </td>
+              <td>
+                <label className="telecom-pack-form-label">Observation</label>
+                <input
+                  type="text"
+                  name="observation"
+                  value={isEditing ? currentPack.observation : newPack.observation}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Entrer une observation"
+                />
+              </td>
+            </tr>
           </tbody>
         </table>
-        {isEditing ? (
-          <button className="update-button" onClick={handleUpdatePack}>Update Pack</button>
-        ) : (
-          <button className="add-button" onClick={handleAddPack}>Add Pack</button>
-        )}
+        <button className="add-pack" onClick={isEditing ? handleUpdatePack : handleAddPack}>
+          {isEditing ? 'Update Pack' : 'Add Pack'}
+        </button>
       </div>
 
       <div className="table-container">
         {telecomPacks.length > 0 ? (
           <Table columns={columns} data={telecomPacks} />
         ) : (
-          <div>Loading...</div>
+          <div></div> // Remove the "Loading..." feature here
         )}
       </div>
     </div>
   );
 };
 
-const SelectColumnFilter = ({ column: { filterValue, setFilter, preFilteredRows, id } }) => {
+const SelectColumnFilter = ({ column: { filterValue, setFilter, preFilteredRows, id, placeholder } }) => {
   const options = React.useMemo(() => {
     const optionsSet = new Set();
     preFilteredRows.forEach(row => {
@@ -425,7 +521,7 @@ const SelectColumnFilter = ({ column: { filterValue, setFilter, preFilteredRows,
       onChange={handleChange}
       options={options}
       isMulti
-      placeholder="Filtrer par..."
+      placeholder={placeholder || 'Filter...'}
       className="filter-select"
     />
   );

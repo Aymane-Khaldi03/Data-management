@@ -650,11 +650,11 @@ const ITEquipment = () => {
       </div>
       <div className="pagination-controls">
         <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
-          Previous
+          Précédent
         </button>
         <span>Page {currentPage} of {totalPages}</span>
         <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
-          Next
+          Suivant
         </button>
       </div>
       <div className="page-number-navigation">

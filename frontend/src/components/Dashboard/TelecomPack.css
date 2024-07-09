@@ -113,6 +113,7 @@
   align-self: center;
   border: 4px solid black;
   font-weight: bold;
+  width: 10%;
 }
 
 .add-pack button:hover {
@@ -124,7 +125,7 @@
   width: 100%;
   overflow-x: auto;
   overflow-y: auto; /* Enable vertical scrolling */
-  max-height: 500px; /* Set a fixed height for the table container */
+  max-height: 700px !important;; /* Set a fixed height for the table container */
 }
 
 .data-table {
@@ -141,6 +142,7 @@
   padding: 12px;
   text-align: left;
   white-space: nowrap;
+  width: 60px;
 }
 
 .data-table th {
@@ -260,7 +262,7 @@
   width: 100%;
   overflow-x: auto;
   overflow-y: auto; /* Enable vertical scrolling */
-  max-height: 110vh; /* Increase max-height to 90% of the viewport height */
+  max-height: 180vh; /* Increase max-height to 90% of the viewport height */
   white-space: nowrap; /* Ensure table rows do not wrap */
 }
 
