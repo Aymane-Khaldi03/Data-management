@@ -186,15 +186,15 @@ const AdminDashboard = () => {
         <h1 className="admin-dashboard-title">Admin Dashboard</h1>
 
         <div className="admin-user-history-section">
-          <h2>User Login History</h2>
+          <h2>Historique de connexion utilisateur</h2>
           {userHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
                 <thead>
                   <tr>
                     <th>Email</th>
-                    <th>Full Name</th>
-                    <th>Last Login</th>
+                    <th>Nom et Prénom</th>
+                    <th>Dernière connexion</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -209,24 +209,24 @@ const AdminDashboard = () => {
               </table>
             </div>
           ) : (
-            <p>No user login history available.</p>
+            <p>Aucun historique de connexion utilisateur disponible.</p>
           )}
         </div>
 
         <div className="admin-modification-history-section">
-          <h2>IT Equipment Modification History</h2>
-          <button onClick={handleResetModificationHistory} className="reset-button">Reset IT Equipment History</button>
+          <h2>Historique des modifications de Matériel informatique</h2>
+          <button onClick={handleResetModificationHistory} className="reset-button">Réinitialiser</button>
           {modificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>User</th>
+                    <th>Utilisateur</th>
                     <th>Email</th>
-                    <th>Modification Time</th>
-                    <th>Field</th>
-                    <th>Old Value</th>
-                    <th>New Value</th>
+                    <th>Temps de Modification</th>
+                    <th>Champ</th>
+                    <th>Ancienne Valeur</th>
+                    <th>Nouvelle valeur</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -244,24 +244,24 @@ const AdminDashboard = () => {
               </table>
             </div>
           ) : (
-            <p>No IT equipment modification history available.</p>
+            <p>Aucun historique de modification de Matériel Informatique disponible.</p>
           )}
         </div>
 
         <div className="admin-modification-history-section">
-          <h2>Telecom Pack Modification History</h2>
-          <button onClick={handleResetTelecomModificationHistory} className="reset-button">Reset Telecom Pack History</button>
+          <h2>Historique des modifications du Parc Télécom</h2>
+          <button onClick={handleResetTelecomModificationHistory} className="reset-button">Réinitialiser</button>
           {telecomModificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>User</th>
+                    <th>Utilisateur</th>
                     <th>Email</th>
-                    <th>Modification Time</th>
-                    <th>Field</th>
-                    <th>Old Value</th>
-                    <th>New Value</th>
+                    <th>Temps de Modification</th>
+                    <th>Champ</th>
+                    <th>Ancienne Valeur</th>
+                    <th>Nouvelle valeur</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -279,23 +279,23 @@ const AdminDashboard = () => {
               </table>
             </div>
           ) : (
-            <p>No Telecom Pack modification history available.</p>
+            <p>Aucun historique de modification du Parc Télécom disponible.</p>
           )}
         </div>
         <div className="admin-modification-history-section">
-          <h2>Telephone Line Modification History</h2>
-          <button onClick={handleResetTelephoneLineModificationHistory} className="reset-button">Reset Telephone Line History</button>
+          <h2>Historique des modifications des Lignes Téléphoniques</h2>
+          <button onClick={handleResetTelephoneLineModificationHistory} className="reset-button">Réinitialiser</button>
           {telephoneLineModificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
                 <thead>
                   <tr>
-                    <th>User</th>
+                    <th>Utilisateur</th>
                     <th>Email</th>
-                    <th>Modification Time</th>
-                    <th>Field</th>
-                    <th>Old Value</th>
-                    <th>New Value</th>
+                    <th>Temps de Modification</th>
+                    <th>Champ</th>
+                    <th>Ancienne Valeur</th>
+                    <th>Nouvelle valeur</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -313,7 +313,7 @@ const AdminDashboard = () => {
               </table>
             </div>
           ) : (
-            <p>No Telephone Line modification history available.</p>
+            <p>Aucun historique de modification de Ligne Téléphonique disponible.</p>
           )}
         </div>
 

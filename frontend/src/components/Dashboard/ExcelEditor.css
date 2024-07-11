@@ -1,162 +1,49 @@
+/* ExcelEditor.css */
 .excel-editor {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 20px;
-  max-width: 100%;
-  overflow: auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
 }
 
-.file-upload-container {
-  display: flex;
-  justify-content: center;
+.excel-editor h2 {
+  font-size: 24px;
   margin-bottom: 20px;
-  width: 100%;
 }
 
-.file-input {
-  padding: 10px;
-  border: 1px solid black;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  background-color: #211e1e68;
+.excel-editor label {
+  display: block;
+  margin-bottom: 10px;
   font-weight: bold;
 }
 
-.file-input:hover {
-  background-color: #ef6108;
-}
-
-.table-container {
+.excel-editor input[type="file"] {
   display: block;
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-.table-actions {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 10px;
-}
-
-.action-button {
-  padding: 8px 16px;
-  margin-right: 8px;
-  background-color: #06bb1e;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.action-button.delete {
-  background-color: #dc3545;
-}
-
-.action-button:hover {
-  background-color: #0056b3;
-}
-
-.action-button.delete:hover {
-  background-color: #c82333;
-}
-
-.data-table {
-  width: max-content;
-  border-collapse: collapse;
   margin-bottom: 20px;
-  background-color: white;
 }
 
-.data-table th,
-.data-table td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: left;
-  position: relative;
-  white-space: nowrap;
+.excel-editor select {
+  margin-bottom: 20px;
 }
 
-.data-table th {
-  background-color: #f2f2f2;
-  cursor: pointer;
-}
-
-.data-table th span {
-  margin-left: 5px;
-}
-
-.data-table input {
-  width: 100%;
-  border: none;
-  background: none;
-  padding: 5px;
-}
-
-.data-table input:focus {
-  outline: none;
-  background-color: #eef;
-}
-
-.filter-select {
-  width: 100%;
-  padding: 4px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.filter-select__control {
-  width: 100%;
-  border: 1px solid #ccc;
-}
-
-.filter-select__menu {
-  width: 100%;
-}
-
-.download-button {
+.excel-editor button {
   padding: 10px 20px;
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 10px;
 }
 
-.download-button:hover {
+.excel-editor button:hover {
   background-color: #0056b3;
 }
 
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
+.excel-editor ul {
+  list-style-type: none;
+  padding: 0;
 }
 
-.pagination button {
-  margin: 0 5px;
-  padding: 5px 10px;
-  background-color: #4D2C21;
-  color: white;
-  border: 3px solid rgb(255, 193, 111);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.pagination button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.pagination select {
-  margin-left: 10px;
-  padding: 5px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+.excel-editor ul li {
+  background: #f2f2f2;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 5px;
 }

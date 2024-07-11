@@ -48,8 +48,8 @@ const Signup = () => {
           <label style={styles.label}>Password</label>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={styles.input} />
         </div>
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           style={isHovering ? { ...styles.button, ...styles.buttonHover } : styles.button}
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}

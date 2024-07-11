@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Route, Switch, Redirect, useLocation, BrowserRouter as Router } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './components/Auth/Login';
@@ -10,27 +10,24 @@ import Navbar from './components/Shared/Navbar';
 import Sidebar from './components/Shared/Sidebar';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import ExcelEditor from './components/Dashboard/ExcelEditor';
-//
 import ITEquipmentLanding from './components/Dashboard/ITEquipmentLanding';
 import ITEquipmentView from './components/Dashboard/ITEquipmentView';
 import ITEquipment from './components/Dashboard/ITEquipment';
-//
 import TelecomPack from './components/Dashboard/TelecomPack';
 import TelecomPackLanding from './components/Dashboard/TelecomPackLanding';
 import TelecomPackView from './components/Dashboard/TelecomPackView';
-
-import './App.css';
 import TelephoneLine from './components/Dashboard/TelephoneLine';
 import TelephoneLineLanding from './components/Dashboard/TelephoneLineLanding';
 import TelephoneLineView from './components/Dashboard/TelephoneLineView';
+
+import './App.css';
 
 const AppContent = () => {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Determine if the current path is the homepage, signup page, or login page
   const showSidebar = !['/', '/signup', '/login'].includes(location.pathname);
-  const isAuthenticated = !!user; // Check if the user is authenticated
+  const isAuthenticated = !!user;
 
   const getDashboardComponent = () => {
     if (!isAuthenticated) {

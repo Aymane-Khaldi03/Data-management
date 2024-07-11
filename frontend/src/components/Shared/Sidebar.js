@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const [isActive, setIsActive] = useState(false);
   const { logout } = useAuth();
+  const history = useHistory();
 
   const toggleSidebar = () => {
     setIsActive(!isActive);
+  };
+
+  const handleLogout = () => {
+    logout();
+    history.push('/login'); // Redirect to login page upon logout
   };
 
   return (
@@ -41,13 +47,13 @@ const Sidebar = () => {
             </li>
             <li>
               <NavLink to="/edit-excel" activeClassName="active">
-                Editer Excel
+                Importer Excel
               </NavLink>
             </li>
           </ul>
         </nav>
         <div className="logout-container">
-          <button onClick={logout} className="logout-button">
+          <button onClick={handleLogout} className="logout-button">
             Logout
             <span className="logout-icon">🔒</span>
           </button>

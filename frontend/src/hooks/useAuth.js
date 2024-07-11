@@ -1,4 +1,5 @@
-import { useState, useContext, createContext } from 'react';
+import { useState, useContext, createContext, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 
 const AuthContext = createContext();
 
@@ -13,6 +14,7 @@ export const useAuth = () => {
 
 const useProvideAuth = () => {
   const [user, setUser] = useState(null);
+  const history = useHistory();
 
   const login = async (email, password) => {
     try {
@@ -30,7 +32,7 @@ const useProvideAuth = () => {
         localStorage.setItem('token', data.token);
         const loggedInUser = { email, role: decodedToken.user.role, fullName: decodedToken.user.fullName };
         setUser(loggedInUser);
-        return loggedInUser; // Return the user object
+        return loggedInUser;
       } else {
         const error = await response.json();
         throw new Error(error.msg || 'Login failed');
@@ -39,6 +41,7 @@ const useProvideAuth = () => {
       throw new Error('Server error: ' + error.message);
     }
   };
+
   const signup = async (fullName, email, password, role) => {
     try {
       const response = await fetch('http://localhost:5000/api/users/register', {
@@ -66,7 +69,17 @@ const useProvideAuth = () => {
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
+    history.push('/login'); // Redirect to login page upon logout
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken = JSON.parse(atob(token.split('.')[1]));
+      const loggedInUser = { email: decodedToken.user.email, role: decodedToken.user.role, fullName: decodedToken.user.fullName };
+      setUser(loggedInUser);
+    }
+  }, []);
 
   return {
     user,

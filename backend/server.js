@@ -4,10 +4,11 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const userRoutes = require('./routes/userRoute');
-const excelRoutes = require('./routes/excelRoute');
+const uploadRoutes = require('./routes/uploadRoute'); // Ensure this line is correct
 const itEquipments = require('./routes/itEquipments'); // Import the IT Equipments route
 const telecomRoutes = require('./routes/telecomRoute'); // Import the Telecom route
 const telephoneLineRoutes = require('./routes/telephoneLineRoute'); // Import the Telephone Line route
+const schemaRoute = require('./routes/schemaRoute');
 
 const sequelize = require('./config/db');
 
@@ -35,10 +36,11 @@ app.use(fileUpload());
 
 // Routes
 app.use('/api/users', userRoutes);
-app.use('/api/excel', excelRoutes);
+app.use('/api/upload', uploadRoutes); // Ensure this line is correct
 app.use('/api', itEquipments); // Register the IT Equipments route
 app.use('/api/telecom-packs', telecomRoutes); // Register the Telecom route
 app.use('/api/telephone-lines', telephoneLineRoutes); // Register the Telephone Line route
+app.use('/api/schema', schemaRoute);
 
 // Sync database
 const syncDatabase = async () => {
