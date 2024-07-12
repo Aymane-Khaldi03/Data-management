@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './ExcelEditor.css';
+import { FaFileExcel } from 'react-icons/fa';
 
 const ExcelEditor = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -19,7 +20,7 @@ const ExcelEditor = () => {
           });
           setSchema(response.data);
         } catch (error) {
-          setMessage('Error fetching schema');
+          setMessage('Erreur lors de la récupération du schéma');
           console.error('Error fetching schema:', error);
         }
       };
@@ -62,7 +63,20 @@ const ExcelEditor = () => {
       <h2>Téléchargement de fichier Excel</h2>
       <div className="form-group">
         <label>Sélectionnez le fichier Excel</label>
-        <input type="file" onChange={handleFileChange} />
+        <div className="file-upload">
+          <input type="file" onChange={handleFileChange} />
+          <div className="file-upload-text">
+            {selectedFile ? (
+              <>
+                <FaFileExcel className="file-icon" />
+                {selectedFile.name}
+              </>
+            ) : (
+              <>Déposez vos fichiers ici ou <span className="browse-files">Parcourir les fichiers</span></>
+            )}
+          </div>
+          <div className="file-type-text">Types de fichiers acceptés : .xlsx</div>
+        </div>
       </div>
       <div className="form-group">
         <label>Sélectionnez un tableau</label>
@@ -76,13 +90,15 @@ const ExcelEditor = () => {
       <button onClick={handleUpload}>Télécharger</button>
       {message && <p>{message}</p>}
       {schema.length > 0 && (
-        <div>
+        <div className="schema-container">
           <h3>Schéma du tableau</h3>
-          <ul>
+          <div className="schema-table">
             {schema.map((column) => (
-              <li key={column}>{column}</li>
+              <div key={column} className="schema-column">
+                {column}
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>
