@@ -34,48 +34,50 @@ const ExcelEditor = () => {
   const handleUpload = async () => {
     try {
       if (!selectedFile || !table) {
-        alert('Please select a table and a file.');
+        alert('Veuillez sélectionner un tableau et un fichier.');
         return;
       }
-  
+
       const formData = new FormData();
       formData.append('file', selectedFile);
-  
+
       const response = await axios.post(`http://localhost:5000/api/upload/${table}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-  
+
       console.log('File uploaded successfully:', response.data);
+      setMessage('Fichier téléchargé avec succès');
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('Error uploading file: ' + error.message);
+      alert('Erreur lors du téléchargement du fichier: ' + error.message);
+      setMessage('Erreur lors du téléchargement du fichier: ' + error.message);
     }
-  };  
+  };
 
   return (
     <div className="excel-editor">
-      <h2>Excel File Upload</h2>
-      <div>
-        <label>Select Excel file</label>
+      <h2>Téléchargement de fichier Excel</h2>
+      <div className="form-group">
+        <label>Sélectionnez le fichier Excel</label>
         <input type="file" onChange={handleFileChange} />
       </div>
-      <div>
-        <label>Select Table</label>
+      <div className="form-group">
+        <label>Sélectionnez un tableau</label>
         <select value={table} onChange={(e) => setTable(e.target.value)}>
-          <option value="">Select a table</option>
-          <option value="it_equipments">IT Equipments</option>
-          <option value="telecom_pack">Telecom Pack</option>
-          <option value="telephone_lines">Telephone Lines</option>
+          <option value="">Sélectionnez un tableau</option>
+          <option value="it_equipments">Équipements informatiques</option>
+          <option value="telecom_pack">Pack Télécom</option>
+          <option value="telephone_lines">Lignes téléphoniques</option>
         </select>
       </div>
-      <button onClick={handleUpload}>Upload</button>
+      <button onClick={handleUpload}>Télécharger</button>
       {message && <p>{message}</p>}
       {schema.length > 0 && (
         <div>
-          <h3>Table Schema</h3>
+          <h3>Schéma du tableau</h3>
           <ul>
             {schema.map((column) => (
               <li key={column}>{column}</li>

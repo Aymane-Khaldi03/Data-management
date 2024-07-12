@@ -4,50 +4,41 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const userRoutes = require('./routes/userRoute');
-const uploadRoutes = require('./routes/uploadRoute'); // Ensure this line is correct
-const itEquipments = require('./routes/itEquipments'); // Import the IT Equipments route
-const telecomRoutes = require('./routes/telecomRoute'); // Import the Telecom route
-const telephoneLineRoutes = require('./routes/telephoneLineRoute'); // Import the Telephone Line route
+const uploadRoutes = require('./routes/uploadRoute');
+const itEquipments = require('./routes/itEquipments'); 
+const telecomRoutes = require('./routes/telecomRoute');
+const telephoneLineRoutes = require('./routes/telephoneLineRoute');
 const schemaRoute = require('./routes/schemaRoute');
-
 const sequelize = require('./config/db');
 
-// Load environment variables
 dotenv.config();
 
-// Initialize Express
 const app = express();
 
-// Use CORS middleware with specific configuration
 const corsOptions = {
-  origin: '*', // Allow all origins (change to specific domains in production)
+  origin: '*',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   preflightContinue: false,
   optionsSuccessStatus: 204
 };
 app.use(cors(corsOptions));
 
-// Body parser middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// File upload middleware
 app.use(fileUpload());
 
-// Routes
 app.use('/api/users', userRoutes);
-app.use('/api/upload', uploadRoutes); // Ensure this line is correct
-app.use('/api', itEquipments); // Register the IT Equipments route
-app.use('/api/telecom-packs', telecomRoutes); // Register the Telecom route
-app.use('/api/telephone-lines', telephoneLineRoutes); // Register the Telephone Line route
+app.use('/api/upload', uploadRoutes);
+app.use('/api', itEquipments);
+app.use('/api/telecom-packs', telecomRoutes);
+app.use('/api/telephone-lines', telephoneLineRoutes);
 app.use('/api/schema', schemaRoute);
 
-// Sync database
 const syncDatabase = async () => {
   try {
-    await sequelize.authenticate(); // Check if the connection is OK
+    await sequelize.authenticate();
     console.log('Database connection has been established successfully.');
-    await sequelize.sync(); // Synchronize without force to avoid data loss
+    await sequelize.sync();
     console.log('Database synchronized...');
   } catch (err) {
     console.error('Error synchronizing database:', err);
@@ -57,10 +48,8 @@ const syncDatabase = async () => {
 
 syncDatabase();
 
-// Define PORT
 const PORT = process.env.PORT || 5000;
 
-// Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
