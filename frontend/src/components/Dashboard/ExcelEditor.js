@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import * as XLSX from 'xlsx';
 import './ExcelEditor.css';
 import { FaFileExcel } from 'react-icons/fa';
 
@@ -8,6 +9,7 @@ const ExcelEditor = () => {
   const [table, setTable] = useState('');
   const [schema, setSchema] = useState([]);
   const [message, setMessage] = useState('');
+  const [matchingColumns, setMatchingColumns] = useState(0);
 
   useEffect(() => {
     if (table) {
@@ -58,6 +60,34 @@ const ExcelEditor = () => {
     }
   };
 
+  const filterColumns = (data) => {
+    if (schema.length === 0) return data;
+    return data.map(record => {
+      return Object.fromEntries(
+        Object.entries(record).filter(([key]) => schema.includes(key))
+      );
+    });
+  };
+
+  const countMatchingColumns = (data) => {
+    if (schema.length === 0 || data.length === 0) return 0;
+    return schema.filter(column => Object.keys(data[0]).includes(column)).length;
+  };
+
+  useEffect(() => {
+    if (selectedFile) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const workbook = XLSX.read(e.target.result, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        const filteredData = filterColumns(data);
+        setMatchingColumns(countMatchingColumns(filteredData));
+      };
+      reader.readAsBinaryString(selectedFile);
+    }
+  }, [selectedFile, schema]);
+
   return (
     <div className="excel-editor">
       <h2>Téléchargement de fichier Excel</h2>
@@ -92,6 +122,7 @@ const ExcelEditor = () => {
       {schema.length > 0 && (
         <div className="schema-container">
           <h3>Schéma du tableau</h3>
+          <p>Nombre de colonnes correspondantes : {matchingColumns}</p>
           <div className="schema-table">
             {schema.map((column) => (
               <div key={column} className="schema-column">

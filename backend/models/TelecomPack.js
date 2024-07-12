@@ -16,10 +16,6 @@ const TelecomPack = sequelize.define('TelecomPack', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  produit: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
   produit2: {
     type: DataTypes.STRING, // Add this field
     allowNull: true,

@@ -13,7 +13,7 @@ const subfieldOptionsMap = {
 };
 
 const formatDate = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString || dateString === '------') return '';
   const date = new Date(dateString);
   return date.toISOString().split('T')[0];
 };
@@ -91,7 +91,7 @@ const TelecomPack = () => {
   
   const fetchDropdownOptions = async () => {
     try {
-      const fields = ['entite', 'operateur', 'produit', 'etatAbonnement'];
+      const fields = ['entite', 'operateur', 'etatAbonnement'];
       const fetchedOptions = {};
       for (const field of fields) {
         const response = await axios.get(`http://localhost:5000/api/telecom-packs/dropdown/${field}`, {
@@ -103,10 +103,8 @@ const TelecomPack = () => {
         fetchedOptions[field] = uniqueValues;
       }
 
-      // Ensure "DATA" is included in the produit options
-      if (!fetchedOptions.produit.includes("DATA")) {
-        fetchedOptions.produit.push("DATA");
-      }
+      fetchedOptions.produit = ['DATA', 'VOIX', 'MOBILE', 'INTERNET'];
+
 
       setOptions(fetchedOptions);
     } catch (error) {
@@ -154,9 +152,9 @@ const TelecomPack = () => {
       alert('The "entite" field must be filled.');
       return;
     }
-
+  
     try {
-      const formattedPack = setDefaultValues({ ...newPack });
+      const { produit, ...formattedPack } = setDefaultValues({ ...newPack });
       const response = await axios.post('http://localhost:5000/api/telecom-packs', formattedPack, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -167,7 +165,7 @@ const TelecomPack = () => {
       setNewPack({
         entite: '',
         operateur: '',
-        produit: '',
+        produit: '', // Keep this for frontend use
         produit2: '',
         numero: '',
         etatAbonnement: '',
@@ -200,7 +198,7 @@ const TelecomPack = () => {
 
   const handleUpdatePack = async () => {
     try {
-      const formattedPack = setDefaultValues({ ...currentPack });
+      const { produit, ...formattedPack } = setDefaultValues({ ...currentPack }); // Exclude 'produit' from being sent
       const response = await axios.put(`http://localhost:5000/api/telecom-packs/${currentPack.id}`, formattedPack, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -239,17 +237,17 @@ const TelecomPack = () => {
     const options = subfieldOptionsMap[value] || [];
     setSubfieldOptions(options);
     setSubfield(''); // Reset subfield when produit changes
-
+  
     if (isEditing) {
       setCurrentPack(prevState => ({
         ...prevState,
-        produit: value,
+        produit: value, // Keep produit here
         produit2: '' // Reset produit2 when produit changes
       }));
     } else {
       setNewPack(prevState => ({
         ...prevState,
-        produit: value,
+        produit: value, // Keep produit here
         produit2: '' // Reset produit2 when produit changes
       }));
     }
@@ -278,13 +276,25 @@ const TelecomPack = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      setTelecomPacks(telecomPacks.filter(pack => pack.id !== id));
-      setTotalPages(Math.ceil((telecomPacks.length - 1) / pageSize));
+  
+      // Use functional state update to ensure the latest state is used
+      setTelecomPacks(prevTelecomPacks => {
+        const updatedTelecomPacks = prevTelecomPacks.filter(pack => pack.id !== id);
+        setTotalPages(Math.ceil(updatedTelecomPacks.length / pageSize));
+  
+        // Adjust currentPage if necessary
+        if (currentPage > Math.ceil(updatedTelecomPacks.length / pageSize) && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        }
+  
+        return updatedTelecomPacks;
+      });
     } catch (error) {
       console.error('Error deleting Telecom Pack:', error.message);
       alert('Failed to delete telecom pack: ' + error.message);
     }
   };
+  
 
   const columns = React.useMemo(() => [
     {
@@ -365,7 +375,7 @@ const TelecomPack = () => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     return telecomPacks.slice(startIndex, endIndex);
-  }, [telecomPacks, currentPage, pageSize]);
+  }, [telecomPacks, currentPage, pageSize]);  
 
   return (
     <div className="telecom-pack-manager">
@@ -497,25 +507,24 @@ const TelecomPack = () => {
           {isEditing ? 'Update Pack' : 'Add Pack'}
         </button>
       </div>
-
       <div className="table-container">
-        <Table columns={columns} data={paginatedData} />
-      </div>
-      <div className="pagination-controls">
-        <button onClick={() => paginate(1)} disabled={currentPage === 1}>{'<<'}</button>
-        <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
-        <span>Page {currentPage} of {totalPages}</span>
-        <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>{'Suivant'}</button>
-        <button onClick={() => paginate(totalPages)} disabled={currentPage === totalPages}>{'>>'}</button>
-        <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
-          <option value={10}>Show 10</option>
-          <option value={25}>Show 25</option>
-          <option value={50}>Show 50</option>
-          <option value={100}>Show 100</option>
-        </select>
-      </div>
+      <Table columns={columns} data={paginatedData} />
     </div>
-  );
+    <div className="pagination-controls">
+      <button onClick={() => paginate(1)} disabled={currentPage === 1}>{'<<'}</button>
+      <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
+      <span>Page {currentPage} of {totalPages}</span>
+      <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>{'Suivant'}</button>
+      <button onClick={() => paginate(totalPages)} disabled={currentPage === totalPages}>{'>>'}</button>
+      <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
+        <option value={10}>Show 10</option>
+        <option value={25}>Show 25</option>
+        <option value={50}>Show 50</option>
+        <option value={100}>Show 100</option>
+      </select>
+    </div>
+  </div>
+);
 };
 
 const SelectColumnFilter = ({ column: { filterValue, setFilter, preFilteredRows, id, placeholder } }) => {

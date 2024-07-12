@@ -107,9 +107,6 @@ router.get('/dropdown/:field', authenticate, async (req, res) => {
       case 'operateur':
         columnName = 'operateur';
         break;
-      case 'produit':
-        columnName = 'produit';
-        break;
       case 'etatAbonnement':
         columnName = 'etatabonnement'; // database column name
         break;
