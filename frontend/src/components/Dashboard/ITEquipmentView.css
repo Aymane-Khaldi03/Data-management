@@ -66,13 +66,15 @@
   background-color: white;
 }
 
-.itequipment-view-data-table th, .itequipment-view-data-table td {
+.itequipment-view-container .itequipment-view-data-table th, 
+.itequipment-view-container .itequipment-view-data-table td {
   border: 1px solid #ccc;
   padding: 8px;
   text-align: left;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 13px; /* Increased font size */
 }
+
 
 .itequipment-view-data-table th {
   background-color: #f2f2f2;

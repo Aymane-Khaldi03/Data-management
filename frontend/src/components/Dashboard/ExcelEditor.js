@@ -127,6 +127,10 @@ const ExcelEditor = () => {
             {schema.map((column) => (
               <div key={column} className="schema-column">
                 {column}
+                <div className="placeholder">
+                  {column === 'numero_de_gsm' && 'Ex: 212XXXXXXXXX'}
+                  {column.includes('date') && 'Format: yyyy-mm-dd ou mm/dd/yyyy'}
+                </div>
               </div>
             ))}
           </div>

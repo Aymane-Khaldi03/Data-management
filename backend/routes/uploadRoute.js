@@ -66,19 +66,44 @@ const setDefaultValuesParcTelecom = (data, defaultValue = '') => {
 
 // Helper function to filter and set default values for the data based on the table
 const filterAndSetDefaults = (data, table) => {
-  switch (table) {
-    case 'it_equipments':
-      return data.map(record => setDefaultValuesMaterielInformatique(record));
-    case 'telecom_pack':
-      return data.map(record => setDefaultValuesParcTelecom(record));
-    case 'telephone_lines':
-      return data.map(record => {
-        record.numero_de_gsm = String(record.numero_de_gsm);  // Ensure numero_de_gsm is a string
-        return record;
-      });
-    default:
-      throw new Error('Invalid table name');
-  }
+  const tableColumns = {
+    it_equipments: [
+      'categorie', 'marque', 'model', 'code_materiel', 'serie', 'code_localisation',
+      'code_entite', 'date_installation', 'fin_garantie', 'statut', 'type_acquisition',
+      'date_livraison', 'fournisseur', 'prix_achat', 'numero_appel_offre', 'numero_facture',
+      'numero_livraison', 'cout_maintenance', 'emploi_principal', 'niveau_criticite', 'sla',
+      'date_sortie', 'commentaire'
+    ],
+    telecom_pack: [
+      'entite', 'operateur', 'produit2', 'numero', 'etatAbonnement', 'dateAbonnement',
+      'dateReengagement', 'dateEtat', 'observation'
+    ],
+    telephone_lines: [
+      'numero_de_gsm', 'full_name', 'code_entite', 'direction', 'fonction', 'operateur',
+      'categorie', 'poste_GSM'
+    ]
+  };
+
+  const selectedColumns = tableColumns[table];
+
+  return data.map(record => {
+    let filteredRecord = {};
+    Object.keys(record).forEach(key => {
+      if (selectedColumns.includes(key)) {
+        filteredRecord[key] = record[key];
+      }
+    });
+
+    if (table === 'it_equipments') {
+      filteredRecord = setDefaultValuesMaterielInformatique(filteredRecord);
+    } else if (table === 'telecom_pack') {
+      filteredRecord = setDefaultValuesParcTelecom(filteredRecord);
+    } else if (table === 'telephone_lines') {
+      filteredRecord.numero_de_gsm = String(filteredRecord.numero_de_gsm);  // Ensure numero_de_gsm is a string
+    }
+
+    return filteredRecord;
+  });
 };
 
 // Helper function to get unique column for each table
@@ -169,6 +194,12 @@ router.post('/:table', authenticate, async (req, res) => {
       try {
         const whereClause = {};
         whereClause[uniqueColumn] = record[uniqueColumn];
+
+        // Ensure `code_materiel` is present and not undefined
+        if (!record[uniqueColumn]) {
+          console.error(`Record missing unique column ${uniqueColumn}:`, record);
+          continue;
+        }
 
         // Find the existing record based on unique column
         const existingRecord = await Model.findOne({ where: whereClause });

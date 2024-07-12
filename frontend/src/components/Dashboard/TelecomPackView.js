@@ -12,6 +12,35 @@ const TelecomPackView = () => {
   const [viewType, setViewType] = useState('general');
   const history = useHistory();
 
+  ////
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const handlePageNumberClick = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const paginatedData = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return telecomPacks.slice(startIndex, endIndex);
+  }, [telecomPacks, currentPage, rowsPerPage]);
+
+  const columnsWithRowNumber = React.useMemo(() => {
+    const rowNumberColumn = {
+      Header: '#',
+      id: 'rowNumber',
+      accessor: (row, i) => (currentPage - 1) * rowsPerPage + i + 1,
+      disableFilters: true,
+      disableSortBy: true,
+      width: 50,
+    };
+
+    const filteredColumns = columns.filter(col => col.Header !== '#');
+    return [rowNumberColumn, ...filteredColumns];
+  }, [columns, currentPage, rowsPerPage]);
+  //////
+
   const measureTextWidth = (text, font = '12px Arial') => {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
@@ -48,7 +77,7 @@ const TelecomPackView = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-    
+
         const data = response.data.map(pack => {
           const { createdat, updatedat, id, produit, ...rest } = pack; // Exclude createdAt, updatedAt, id, and produit here
           const formattedPack = setDefaultValues(rest);
@@ -59,9 +88,9 @@ const TelecomPackView = () => {
             dateEtat: formatDate(formattedPack.dateEtat),
           };
         });
-    
+
         setTelecomPacks(data);
-    
+
         const headers = Object.keys(data[0] || {});
         const filteredHeaders = headers.filter(header => !['createdat', 'updatedat', 'produit'].includes(header)); // Exclude createdAt, updatedAt, and produit here
         const maxWidths = filteredHeaders.reduce((acc, header) => {
@@ -73,7 +102,7 @@ const TelecomPackView = () => {
           acc[header] = maxLength;
           return acc;
         }, {});
-    
+
         const cols = [
           {
             Header: '#',
@@ -89,15 +118,15 @@ const TelecomPackView = () => {
             width: maxWidths[header] + 20,
           })),
         ];
-    
+
         setColumns(cols);
       } catch (error) {
         console.error('Error fetching Telecom Packs:', error);
         alert('Error fetching Telecom Packs: ' + error.message);
       }
-    };    
+    };
     fetchTelecomPacks();
-  }, []);           
+  }, []);
 
   const SelectColumnFilter = ({
     column: { filterValue, setFilter, preFilteredRows, id },
@@ -143,7 +172,7 @@ const TelecomPackView = () => {
     XLSX.utils.book_append_sheet(wb, ws, "TelecomPacks");
     XLSX.writeFile(wb, "Parc_Telecom.xlsx");
   };
-  
+
   const Table = ({ columns, data }) => {
     const defaultColumn = {
       minWidth: 30,
@@ -216,10 +245,25 @@ const TelecomPackView = () => {
       <h1 className="telecompack-view-title">Afficher Telecom Packs</h1>
       {columns.length > 0 && (
         <Table
-          columns={columns}
-          data={viewType === 'general' ? telecomPacks : filterData(telecomPacks)}
+          columns={columnsWithRowNumber}
+          data={viewType === 'general' ? paginatedData : filterData(paginatedData)}
         />
       )}
+      <div className="pagination-controls">
+        <button onClick={() => handlePageNumberClick(1)} disabled={currentPage === 1}>{'<<'}</button>
+        <button onClick={() => handlePageNumberClick(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
+        <span>
+          Page {currentPage} of {Math.ceil(telecomPacks.length / rowsPerPage)}
+        </span>
+        <button onClick={() => handlePageNumberClick(currentPage + 1)} disabled={currentPage === Math.ceil(telecomPacks.length / rowsPerPage)}>{'Suivant'}</button>
+        <button onClick={() => handlePageNumberClick(Math.ceil(telecomPacks.length / rowsPerPage))} disabled={currentPage === Math.ceil(telecomPacks.length / rowsPerPage)}>{'>>'}</button>
+        <select value={rowsPerPage} onChange={(e) => setRowsPerPage(Number(e.target.value))}>
+          <option value={10}>Show 10</option>
+          <option value={25}>Show 25</option>
+          <option value={50}>Show 50</option>
+          <option value={100}>Show 100</option>
+        </select>
+      </div>
       <div className="telecompack-view-footer">
         <button
           className="telecompack-view-export-button"

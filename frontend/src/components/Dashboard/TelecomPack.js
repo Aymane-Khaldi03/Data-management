@@ -76,19 +76,19 @@ const TelecomPack = () => {
   const [subfieldOptions, setSubfieldOptions] = useState([]);
   const [subfield, setSubfield] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(250); // Define the page size
+  const [pageSize] = useState(10); // Define the page size
   const [totalPages, setTotalPages] = useState(1);
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-  
+
   const handleRowsPerPageChange = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setCurrentPage(1); // Reset to the first page
   };
-  
+
   const fetchDropdownOptions = async () => {
     try {
       const fields = ['entite', 'operateur', 'etatAbonnement'];
@@ -152,7 +152,7 @@ const TelecomPack = () => {
       alert('The "entite" field must be filled.');
       return;
     }
-  
+
     try {
       const { produit, ...formattedPack } = setDefaultValues({ ...newPack });
       const response = await axios.post('http://localhost:5000/api/telecom-packs', formattedPack, {
@@ -237,7 +237,7 @@ const TelecomPack = () => {
     const options = subfieldOptionsMap[value] || [];
     setSubfieldOptions(options);
     setSubfield(''); // Reset subfield when produit changes
-  
+
     if (isEditing) {
       setCurrentPack(prevState => ({
         ...prevState,
@@ -276,17 +276,17 @@ const TelecomPack = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-  
+
       // Use functional state update to ensure the latest state is used
       setTelecomPacks(prevTelecomPacks => {
         const updatedTelecomPacks = prevTelecomPacks.filter(pack => pack.id !== id);
         setTotalPages(Math.ceil(updatedTelecomPacks.length / pageSize));
-  
+
         // Adjust currentPage if necessary
         if (currentPage > Math.ceil(updatedTelecomPacks.length / pageSize) && currentPage > 1) {
           setCurrentPage(currentPage - 1);
         }
-  
+
         return updatedTelecomPacks;
       });
     } catch (error) {
@@ -294,7 +294,7 @@ const TelecomPack = () => {
       alert('Failed to delete telecom pack: ' + error.message);
     }
   };
-  
+
 
   const columns = React.useMemo(() => [
     {
@@ -375,7 +375,7 @@ const TelecomPack = () => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     return telecomPacks.slice(startIndex, endIndex);
-  }, [telecomPacks, currentPage, pageSize]);  
+  }, [telecomPacks, currentPage, pageSize]);
 
   return (
     <div className="telecom-pack-manager">
@@ -508,23 +508,23 @@ const TelecomPack = () => {
         </button>
       </div>
       <div className="table-container">
-      <Table columns={columns} data={paginatedData} />
+        <Table columns={columns} data={paginatedData} />
+      </div>
+      <div className="pagination-controls">
+        <button onClick={() => paginate(1)} disabled={currentPage === 1}>{'<<'}</button>
+        <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>{'Suivant'}</button>
+        <button onClick={() => paginate(totalPages)} disabled={currentPage === totalPages}>{'>>'}</button>
+        <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
+          <option value={10}>Show 10</option>
+          <option value={25}>Show 25</option>
+          <option value={50}>Show 50</option>
+          <option value={100}>Show 100</option>
+        </select>
+      </div>
     </div>
-    <div className="pagination-controls">
-      <button onClick={() => paginate(1)} disabled={currentPage === 1}>{'<<'}</button>
-      <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
-      <span>Page {currentPage} of {totalPages}</span>
-      <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>{'Suivant'}</button>
-      <button onClick={() => paginate(totalPages)} disabled={currentPage === totalPages}>{'>>'}</button>
-      <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
-        <option value={10}>Show 10</option>
-        <option value={25}>Show 25</option>
-        <option value={50}>Show 50</option>
-        <option value={100}>Show 100</option>
-      </select>
-    </div>
-  </div>
-);
+  );
 };
 
 const SelectColumnFilter = ({ column: { filterValue, setFilter, preFilteredRows, id, placeholder } }) => {

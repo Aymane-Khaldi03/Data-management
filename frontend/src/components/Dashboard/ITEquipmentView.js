@@ -13,6 +13,46 @@ const ITEquipmentView = () => {
   const [viewType, setViewType] = useState('general'); // State to toggle between tables
   const history = useHistory();
 
+  ////
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    setTotalPages(Math.ceil(itEquipments.length / rowsPerPage));
+  }, [itEquipments.length, rowsPerPage]);
+
+  const handlePageNumberClick = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setCurrentPage(1); // Reset to the first page
+  };
+
+  const paginatedData = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return itEquipments.slice(startIndex, endIndex);
+  }, [itEquipments, currentPage, rowsPerPage]);
+
+  const columnsWithRowNumber = React.useMemo(() => {
+    const rowNumberColumn = {
+      Header: '#',
+      id: 'rowNumber',
+      accessor: (row, i) => (currentPage - 1) * rowsPerPage + i + 1,
+      disableFilters: true,
+      disableSortBy: true,
+      width: 50,
+    };
+
+    const filteredColumns = columns.filter(col => col.Header !== '#');
+    return [rowNumberColumn, ...filteredColumns];
+  }, [columns, currentPage, rowsPerPage]);
+  ////
+
+
   // Define measureTextWidth function
   const measureTextWidth = (text, font = '12px Arial') => {
     const canvas = document.createElement('canvas');
@@ -220,10 +260,25 @@ const ITEquipmentView = () => {
       </button>
       {columns.length > 0 && (
         <Table
-          columns={columns}
-          data={itEquipments}
+          columns={columnsWithRowNumber}
+          data={paginatedData}
         />
       )}
+      <div className="pagination-controls">
+        <button onClick={() => handlePageNumberClick(1)} disabled={currentPage === 1}>{'<<'}</button>
+        <button onClick={() => handlePageNumberClick(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button onClick={() => handlePageNumberClick(currentPage + 1)} disabled={currentPage === totalPages}>{'Suivant'}</button>
+        <button onClick={() => handlePageNumberClick(totalPages)} disabled={currentPage === totalPages}>{'>>'}</button>
+        <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
+          <option value={10}>Show 10</option>
+          <option value={25}>Show 25</option>
+          <option value={50}>Show 50</option>
+          <option value={100}>Show 100</option>
+        </select>
+      </div>
       <div className="itequipment-view-footer">
         <button
           className="itequipment-view-export-button"

@@ -119,3 +119,24 @@
   background-color: #218838;
   transform: scale(1.05);
 }
+
+
+
+.telecompack-view-filter-select {
+  width: 150%; /* Ensure the select element takes full width */
+  font-size: 14px; /* Adjust font size if needed */
+  padding: 4px; /* Adjust padding if needed */
+}
+
+.telecompack-view-filter-select .Select__control {
+  width: 120%;
+  height: 40px; /* Increase height if needed */
+}
+
+.telecompack-view-filter-select .Select__menu {
+  width: 120%; /* Ensure the dropdown menu takes full width */
+}
+
+.telecompack-view-filter-select .Select__value-container {
+  width: 120%; /* Ensure the value container takes full width */
+}

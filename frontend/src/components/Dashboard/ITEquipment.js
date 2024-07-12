@@ -618,7 +618,7 @@ const ITEquipment = () => {
       <div className="itequipment-view-table-container">
         <Table columns={columns} data={data} />
       </div>
-      <div className="pagination">
+      <div className="pagination-controls">
         <button onClick={() => handlePageNumberClick(1)} disabled={currentPage === 1}>{'<<'}</button>
         <button onClick={() => handlePageNumberClick(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
         <span>
@@ -633,6 +633,7 @@ const ITEquipment = () => {
           <option value={100}>Show 100</option>
         </select>
       </div>
+
     </div>
   );
 };
