@@ -93,8 +93,5 @@ exports.deleteTelephoneLine = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
-<<<<<<< HEAD
 
 
-=======
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
