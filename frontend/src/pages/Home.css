@@ -1,0 +1,59 @@
+.home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    background-color: #f5f5f500;
+    min-height: 100vh;
+    position: relative;
+    flex: 1;
+  }
+  
+  .home h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .home p {
+    font-size: 1.5rem;
+    color: #7d7d7d;
+    margin: 1rem 0;
+  }
+  
+  .home-content {
+    background-color: rgba(233, 7, 7, 0);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.995);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .home img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-top: 2rem;
+  }
+  
+  .footer {
+    text-align: center;
+    padding: 1.5rem;
+    background-color: #333; /* You can change this color */
+    color: #ffffff; 
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    border-radius: 10px;
+    font-size: 1.5rem;
+  }
+  
+  body {
+    display: flex; /*Enable flexbox for the body*/
+    min-height: 100vh; /*Make body fill the entire viewport height*/
+    flex-direction: column;
+  }
