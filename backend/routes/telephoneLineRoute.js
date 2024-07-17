@@ -126,6 +126,7 @@ router.get('/dropdown/:field', authenticate, async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // Drop the Telephone Lines table
 router.delete('/admin/drop-telephone-lines-table', authenticate, async (req, res) => {
   try {
@@ -141,4 +142,6 @@ router.delete('/admin/drop-telephone-lines-table', authenticate, async (req, res
 });
 
 
+=======
+>>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
 module.exports = router;

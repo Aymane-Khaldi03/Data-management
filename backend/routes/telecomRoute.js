@@ -134,6 +134,7 @@ router.get('/dropdown/:field', authenticate, async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // Route to drop the Telecom Pack table
 router.delete('/admin/drop-telecom-pack-table', authenticate, async (req, res) => {
   try {
@@ -148,4 +149,6 @@ router.delete('/admin/drop-telecom-pack-table', authenticate, async (req, res) =
   }
 });
 
+=======
+>>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
 module.exports = router;

@@ -10,7 +10,10 @@ const ExcelEditor = () => {
   const [schema, setSchema] = useState([]);
   const [message, setMessage] = useState('');
   const [matchingColumns, setMatchingColumns] = useState(0);
+<<<<<<< HEAD
   const [uploadProgress, setUploadProgress] = useState(0);
+=======
+>>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
 
   useEffect(() => {
     if (table) {
@@ -50,6 +53,7 @@ const ExcelEditor = () => {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
+<<<<<<< HEAD
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           setUploadProgress(percentCompleted);
@@ -58,6 +62,12 @@ const ExcelEditor = () => {
 
       console.log('File uploaded successfully:', response.data);
       //setMessage('Fichier téléchargé avec succès');
+=======
+      });
+
+      console.log('File uploaded successfully:', response.data);
+      setMessage('Fichier téléchargé avec succès');
+>>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Erreur lors du téléchargement du fichier: ' + error.message);
@@ -118,11 +128,16 @@ const ExcelEditor = () => {
         <select value={table} onChange={(e) => setTable(e.target.value)}>
           <option value="">Sélectionnez un tableau</option>
           <option value="it_equipments">Équipements informatiques</option>
+<<<<<<< HEAD
           <option value="telecom_pack">Parc Télécom</option>
+=======
+          <option value="telecom_pack">Pack Télécom</option>
+>>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
           <option value="telephone_lines">Lignes téléphoniques</option>
         </select>
       </div>
       <button onClick={handleUpload}>Télécharger</button>
+<<<<<<< HEAD
       <div className="progress-container">
         <div className="progress">
           <div className="bar" style={{ width: `${uploadProgress}%` }}>
@@ -136,6 +151,8 @@ const ExcelEditor = () => {
           </div>
         )}
       </div>
+=======
+>>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
       {message && <p>{message}</p>}
       {schema.length > 0 && (
         <div className="schema-container">
