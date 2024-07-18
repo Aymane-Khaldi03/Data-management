@@ -57,7 +57,7 @@ const ExcelEditor = () => {
       });
 
       console.log('File uploaded successfully:', response.data);
-      //setMessage('Fichier téléchargé avec succès');
+      setMessage('Fichier téléchargé avec succès');
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Erreur lors du téléchargement du fichier: ' + error.message);

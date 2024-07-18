@@ -13,7 +13,7 @@ const setDefaultValues = (data, defaultValue = '------') => {
         if (['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'].includes(key)) {
           return [key, null];  // Set date fields to null if empty
         } else {
-          return [key, defaultValue];  // Set other fields to default value
+          return [key, defaultValue];  // Set other fields to default value// 
         }
       }
       return [key, value];
@@ -75,12 +75,13 @@ const ITEquipment = () => {
         console.error('No token found');
         return;
       }
-
+  
       const response = await axios.get('http://localhost:5000/api/it-equipments', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log('Response from server:', response.data); // Debug logging
       setITEquipments(response.data.equipments);
       setOptions(response.data.uniqueValues);
     } catch (error) {

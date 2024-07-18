@@ -7,7 +7,7 @@ import './AdminDashboard.css';
 const AdminDashboard = () => {
   const { user, loading } = useAuth();
   const history = useHistory();
-    const [userHistory, setUserHistory] = useState([]);
+  const [userHistory, setUserHistory] = useState([]);
   const [modificationHistory, setModificationHistory] = useState([]);
   const [telecomModificationHistory, setTelecomModificationHistory] = useState([]);
   const [telephoneLineModificationHistory, setTelephoneLineModificationHistory] = useState([]);
@@ -40,7 +40,7 @@ const AdminDashboard = () => {
 
   const fetchModificationHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/it-equipment-modifications', {
+      const response = await fetch('http://localhost:5000/api/it-equipments/admin/it-equipment-modifications', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -129,18 +129,16 @@ const AdminDashboard = () => {
   if (!user) {
     return null;
   }
-
-
   const handleResetModificationHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/it-equipment-modifications', {
+      const response = await fetch('http://localhost:5000/api/it-equipments/admin/it-equipment-modifications', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-
+  
       if (response.ok) {
         setModificationHistory([]); // Clear the modification history in the state
         console.log('Modification history reset successfully');
@@ -151,6 +149,7 @@ const AdminDashboard = () => {
       console.error('Error resetting modification history:', error);
     }
   };
+
   const handleResetTelecomModificationHistory = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/telecom-packs/admin/telecom-pack-modifications', {
@@ -170,6 +169,7 @@ const AdminDashboard = () => {
       console.error('Error resetting Telecom Pack modification history:', error);
     }
   };
+
   const handleResetTelephoneLineModificationHistory = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/telephone-lines/admin/telephone-line-modifications', {
@@ -190,23 +190,30 @@ const AdminDashboard = () => {
     }
   };
 
-
   const handleDropTable = async (table) => {
     const confirmDrop = window.confirm(`Are you sure you want to drop the ${table} table? This action cannot be undone.`);
     if (confirmDrop) {
       try {
-        const requestUrl = `http://localhost:5000/api/telephone-lines/admin/drop-${table}-table`;
+        let requestUrl = '';
+        if (table === 'it-equipments') {
+          requestUrl = 'http://localhost:5000/api/it-equipments/admin/drop-it-equipments-table';
+        } else if (table === 'telecom-pack') {
+          requestUrl = 'http://localhost:5000/api/telecom-packs/admin/drop-telecom-packs-table';
+        } else if (table === 'telephone-lines') {
+          requestUrl = 'http://localhost:5000/api/telephone-lines/admin/drop-telephone-lines-table';
+        }
+  
         console.log(`Request URL: ${requestUrl}`);
-
+  
         const response = await axios.delete(requestUrl, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-
+  
         console.log("Response:", response);
-
+  
         if (response.status === 204) {
           console.log(`${table} table dropped successfully`);
         } else {
@@ -217,8 +224,8 @@ const AdminDashboard = () => {
         alert(`Error dropping ${table} table: ${error.message}`);
       }
     }
-  };
-
+  };  
+  
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
@@ -260,7 +267,11 @@ const AdminDashboard = () => {
         <div className="admin-modification-history-section">
           <h2>Historique des modifications de Matériel informatique</h2>
           <button onClick={handleResetModificationHistory} className="reset-button">Réinitialiser</button>
-          <button onClick={() => handleDropTable('it-equipments')} className="drop-button">Supprimer la table</button>
+          {user.role === 'admin' && (
+            <button onClick={() => handleDropTable('it-equipments')} className="drop-button">
+              Supprimer la table
+            </button>
+          )}
           {modificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
@@ -296,7 +307,11 @@ const AdminDashboard = () => {
         <div className="admin-modification-history-section">
           <h2>Historique des modifications du Parc Télécom</h2>
           <button onClick={handleResetTelecomModificationHistory} className="reset-button">Réinitialiser</button>
-          <button onClick={() => handleDropTable('telecom-pack')} className="drop-button">Supprimer la table</button>
+          {user.role === 'admin' && (
+            <button onClick={() => handleDropTable('telecom-pack')} className="drop-button">
+              Supprimer la table
+            </button>
+          )}
           {telecomModificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
@@ -332,7 +347,11 @@ const AdminDashboard = () => {
         <div className="admin-modification-history-section">
           <h2>Historique des modifications des Lignes Téléphoniques</h2>
           <button onClick={handleResetTelephoneLineModificationHistory} className="reset-button">Réinitialiser</button>
-          <button onClick={() => handleDropTable('telephone-lines')} className="drop-button">Supprimer la table</button>
+          {user.role === 'admin' && (
+            <button onClick={() => handleDropTable('telephone-lines')} className="drop-button">
+              Supprimer la table
+            </button>
+          )}
           {telephoneLineModificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
