@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-<<<<<<< HEAD
 import axios from 'axios';
-=======
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -114,10 +111,6 @@ const AdminDashboard = () => {
     }
   };
 
-<<<<<<< HEAD
-=======
-
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
   const handleResetModificationHistory = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/admin/it-equipment-modifications', {
@@ -138,10 +131,6 @@ const AdminDashboard = () => {
       console.error('Error resetting modification history:', error);
     }
   };
-<<<<<<< HEAD
-
-=======
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
   const handleResetTelecomModificationHistory = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/telecom-packs/admin/telecom-pack-modifications', {
@@ -151,11 +140,6 @@ const AdminDashboard = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
       if (response.ok) {
         setTelecomModificationHistory([]);
         console.log('Telecom Pack modification history reset successfully');
@@ -166,11 +150,6 @@ const AdminDashboard = () => {
       console.error('Error resetting Telecom Pack modification history:', error);
     }
   };
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
   const handleResetTelephoneLineModificationHistory = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/telephone-lines/admin/telephone-line-modifications', {
@@ -180,11 +159,6 @@ const AdminDashboard = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
       if (response.ok) {
         setTelephoneLineModificationHistory([]);
         console.log('Telephone Line modification history reset successfully');
@@ -195,7 +169,6 @@ const AdminDashboard = () => {
       console.error('Error resetting Telephone Line modification history:', error);
     }
   };
-<<<<<<< HEAD
 
 
   const handleDropTable = async (table) => {
@@ -225,9 +198,6 @@ const AdminDashboard = () => {
       }
     }
   };
-=======
-  
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -271,10 +241,7 @@ const AdminDashboard = () => {
         <div className="admin-modification-history-section">
           <h2>Historique des modifications de Matériel informatique</h2>
           <button onClick={handleResetModificationHistory} className="reset-button">Réinitialiser</button>
-<<<<<<< HEAD
           <button onClick={() => handleDropTable('it-equipments')} className="drop-button">Supprimer la table</button>
-=======
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
           {modificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
@@ -310,10 +277,7 @@ const AdminDashboard = () => {
         <div className="admin-modification-history-section">
           <h2>Historique des modifications du Parc Télécom</h2>
           <button onClick={handleResetTelecomModificationHistory} className="reset-button">Réinitialiser</button>
-<<<<<<< HEAD
           <button onClick={() => handleDropTable('telecom-pack')} className="drop-button">Supprimer la table</button>
-=======
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
           {telecomModificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
@@ -345,17 +309,11 @@ const AdminDashboard = () => {
             <p>Aucun historique de modification du Parc Télécom disponible.</p>
           )}
         </div>
-<<<<<<< HEAD
 
         <div className="admin-modification-history-section">
           <h2>Historique des modifications des Lignes Téléphoniques</h2>
           <button onClick={handleResetTelephoneLineModificationHistory} className="reset-button">Réinitialiser</button>
           <button onClick={() => handleDropTable('telephone-lines')} className="drop-button">Supprimer la table</button>
-=======
-        <div className="admin-modification-history-section">
-          <h2>Historique des modifications des Lignes Téléphoniques</h2>
-          <button onClick={handleResetTelephoneLineModificationHistory} className="reset-button">Réinitialiser</button>
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
           {telephoneLineModificationHistory.length > 0 ? (
             <div className="admin-table-container">
               <table className="admin-table">
@@ -387,10 +345,6 @@ const AdminDashboard = () => {
             <p>Aucun historique de modification de Ligne Téléphonique disponible.</p>
           )}
         </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
       </div>
     </div>
   );

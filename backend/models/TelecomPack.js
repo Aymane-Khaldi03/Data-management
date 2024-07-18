@@ -47,7 +47,6 @@ const TelecomPack = sequelize.define('TelecomPack', {
   observation: {
     type: DataTypes.TEXT,
     allowNull: true,
-<<<<<<< HEAD
   },
   typePoste: {          // Added
     type: DataTypes.STRING,
@@ -60,8 +59,6 @@ const TelecomPack = sequelize.define('TelecomPack', {
   dateAffectation: {    // Added
     type: DataTypes.DATE,
     allowNull: true,
-=======
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
   }
 }, {
   tableName: 'telecom_pack', // Ensure this matches the actual table name

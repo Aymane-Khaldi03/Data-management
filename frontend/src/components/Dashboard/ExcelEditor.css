@@ -102,7 +102,6 @@
   background-color: #cc6600;
 }
 
-<<<<<<< HEAD
 .progress-container {
   margin-top: 20px;
   text-align: center;
@@ -149,14 +148,6 @@
   font-weight: bold;
 }
 
-=======
-.excel-editor p {
-  color: #ff0000;
-  font-weight: bold;
-  text-align: center;
-}
-
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
 .schema-container {
   margin-top: 20px;
 }

@@ -57,14 +57,10 @@ const TelecomPack = () => {
     dateAbonnement: '',
     dateReengagement: '',
     dateEtat: '',
-<<<<<<< HEAD
     observation: '',
     typePoste: '',        // Added
     numeroDeSerie: '',    // Added
     dateAffectation: ''   // Added
-=======
-    observation: ''
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
   });
   const [isEditing, setIsEditing] = useState(false);
   const [currentPack, setCurrentPack] = useState({
@@ -77,14 +73,10 @@ const TelecomPack = () => {
     dateAbonnement: '',
     dateReengagement: '',
     dateEtat: '',
-<<<<<<< HEAD
     observation: '',
     typePoste: '',        // Added
     numeroDeSerie: '',    // Added
     dateAffectation: ''   // Added
-=======
-    observation: ''
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
   });
   const history = useHistory();
   const [subfieldOptions, setSubfieldOptions] = useState([]);
@@ -383,7 +375,6 @@ const TelecomPack = () => {
       Filter: SelectColumnFilter,
       placeholder: 'Filtrer par'
     },
-<<<<<<< HEAD
     {
       Header: 'Type de Poste',      // Added
       accessor: 'typePoste',        // Added
@@ -403,9 +394,6 @@ const TelecomPack = () => {
       placeholder: 'Filtrer par'
     }
   ], [currentPage, pageSize]);  
-=======
-  ], [currentPage, pageSize]);
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
 
   const paginatedData = React.useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
@@ -537,7 +525,6 @@ const TelecomPack = () => {
                 />
               </td>
             </tr>
-<<<<<<< HEAD
             <tr>
               <td>
                 <label className="telecom-pack-form-label">Type de Poste</label>
@@ -574,8 +561,6 @@ const TelecomPack = () => {
               </td>
             </tr>
 
-=======
->>>>>>> d0277b8795c574a1f31b2650c890718540ac5a87
           </tbody>
         </table>
         <button className="add-pack" onClick={isEditing ? handleUpdatePack : handleAddPack}>
