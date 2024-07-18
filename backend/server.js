@@ -29,7 +29,7 @@ app.use(fileUpload());
 
 app.use('/api/users', userRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('/api', itEquipments);
+app.use('/api/it-equipments', itEquipments);
 app.use('/api/telecom-packs', telecomRoutes);
 app.use('/api/telephone-lines', telephoneLineRoutes);
 app.use('/api/schema', schemaRoute);
@@ -47,7 +47,7 @@ const syncDatabase = async () => {
 };
 
 syncDatabase();
-
+  
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

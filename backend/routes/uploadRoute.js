@@ -1,3 +1,5 @@
+// routes/uploadRoute.js
+
 const express = require('express');
 const router = express.Router();
 const XLSX = require('xlsx');
@@ -22,16 +24,17 @@ const formatDate = (date) => {
 
 // Function to set default values for materiel informatique and format dates
 const setDefaultValuesMaterielInformatique = (data, defaultValue = '------') => {
+  const defaultDateFields = ['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'];
   return Object.fromEntries(
     Object.entries(data).map(([key, value]) => {
       if (value === '' || value === null) {
-        if (['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'].includes(key)) {
+        if (defaultDateFields.includes(key)) {
           return [key, null];  // Set date fields to null if empty
         } else {
           return [key, defaultValue];  // Set other fields to default value
         }
       }
-      if (['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'].includes(key)) {
+      if (defaultDateFields.includes(key)) {
         if (!isNaN(value)) {
           value = excelDateToJSDate(value);  // Convert Excel serial date to JS Date
         }
@@ -64,15 +67,27 @@ const setDefaultValuesParcTelecom = (data, defaultValue = '') => {
   );
 };
 
+// Function to set default values for general fields
+const setDefaultValues = (data, defaultValue = '------') => {
+  return Object.fromEntries(
+    Object.entries(data).map(([key, value]) => {
+      if (value === '' || value === null) {
+        return [key, defaultValue];
+      }
+      return [key, value];
+    })
+  );
+};
+
 // Helper function to filter and set default values for the data based on the table
 const filterAndSetDefaults = (data, table) => {
   const tableColumns = {
     it_equipments: [
       'categorie', 'marque', 'model', 'code_materiel', 'serie', 'code_localisation',
       'code_entite', 'date_installation', 'fin_garantie', 'statut', 'type_acquisition',
-      'date_livraison', 'fournisseur', 'prix_achat', 'numero_appel_offre', 'numero_facture',
+      'date_achat', 'date_livraison', 'fournisseur', 'prix_achat', 'numero_appel_offre', 'numero_facture',
       'numero_livraison', 'cout_maintenance', 'emploi_principal', 'niveau_criticite', 'sla',
-      'date_sortie', 'commentaire'
+      'date_sortie'
     ],
     telecom_pack: [
       'entite', 'operateur', 'produit2', 'numero', 'etatAbonnement', 'dateAbonnement',
@@ -86,22 +101,75 @@ const filterAndSetDefaults = (data, table) => {
 
   const selectedColumns = tableColumns[table];
 
-  return data.map(record => {
-    let filteredRecord = {};
-    Object.keys(record).forEach(key => {
-      if (selectedColumns.includes(key)) {
-        filteredRecord[key] = record[key];
-      }
-    });
+  const columnMapping = {
+    it_equipments: {
+      'categorie': 'categorie',
+      'marque': 'marque',
+      'model': 'model',
+      'code materiel': 'code_materiel',
+      'serie': 'serie',
+      'code localisation': 'code_localisation',
+      'code entité': 'code_entite',
+      'date d\'installation': 'date_installation',
+      'fin de garantie': 'fin_garantie',
+      'statut': 'statut',
+      'type d\'acquisition': 'type_acquisition',
+      'date d\'achat': 'date_achat',
+      'date de livraison': 'date_livraison',
+      'fournisseur': 'fournisseur',
+      'n° de facture': 'numero_facture',
+      'prix d\'achat': 'prix_achat',
+      'n° d\'appel d\'offre': 'numero_appel_offre',
+      'n° de livraison': 'numero_livraison',
+      'côut maintenance': 'cout_maintenance',
+      'emploi principal': 'emploi_principal',
+      'niveau de criticité': 'niveau_criticite',
+      'sla': 'sla',
+      'date de sortie': 'date_sortie'
+    },
+    telephone_lines: {
+      'numero_de_gsm': 'numero_de_gsm',
+      'full_name': 'full_name',
+      'code_entite': 'code_entite',
+      'direction': 'direction',
+      'fonction': 'fonction',
+      'operateur': 'operateur',
+      'categorie': 'categorie',
+      'poste_gsm': 'poste_GSM'
+    },
+    telecom_pack: {
+      'entite': 'entite',
+      'operateur': 'operateur',
+      'produit2': 'produit2',
+      'numero': 'numero',
+      'etatabonnement': 'etatAbonnement',
+      'dateabonnement': 'dateAbonnement',
+      'datereengagement': 'dateReengagement',
+      'dateetat': 'dateEtat',
+      'observation': 'observation'
+    }
+  };
 
+  const mapColumns = (record, mapping) => {
+    let mappedRecord = {};
+    for (let [key, value] of Object.entries(record)) {
+      if (mapping[key.toLowerCase()]) {
+        mappedRecord[mapping[key.toLowerCase()]] = value;
+      }
+    }
+    return mappedRecord;
+  };
+
+  return data.map(record => {
+    let filteredRecord = mapColumns(record, columnMapping[table]);
     if (table === 'it_equipments') {
       filteredRecord = setDefaultValuesMaterielInformatique(filteredRecord);
     } else if (table === 'telecom_pack') {
       filteredRecord = setDefaultValuesParcTelecom(filteredRecord);
     } else if (table === 'telephone_lines') {
+      filteredRecord = setDefaultValues(filteredRecord);  // Apply default values to telephone lines
       filteredRecord.numero_de_gsm = String(filteredRecord.numero_de_gsm);  // Ensure numero_de_gsm is a string
     }
-
     return filteredRecord;
   });
 };
@@ -195,7 +263,7 @@ router.post('/:table', authenticate, async (req, res) => {
         const whereClause = {};
         whereClause[uniqueColumn] = record[uniqueColumn];
 
-        // Ensure `code_materiel` is present and not undefined
+        // Ensure `uniqueColumn` is present and not undefined
         if (!record[uniqueColumn]) {
           console.error(`Record missing unique column ${uniqueColumn}:`, record);
           continue;

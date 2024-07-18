@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const telephoneLineController = require('../controllers/telephoneLineController');
-const { authenticate } = require('../middleware/authMiddleware');
+const { authenticate, isAdmin } = require('../middleware/authMiddleware');
 const TelephoneLineModification = require('../models/TelephoneLineModification'); // Import the Telephone Line Modification model
 const User = require('../models/user');
 const TelephoneLine = require('../models/TelephoneLine');
 const { Op, fn, col } = require('sequelize');
 
 // Get all Telephone Lines
-router.get('/', telephoneLineController.getTelephoneLines);
+router.get('/', authenticate, telephoneLineController.getTelephoneLines);
 
 // Create a new Telephone Line
 router.post('/', authenticate, telephoneLineController.createTelephoneLine);
@@ -17,47 +17,13 @@ router.post('/', authenticate, telephoneLineController.createTelephoneLine);
 router.get('/:id', authenticate, telephoneLineController.getTelephoneLineById);
 
 // Update a Telephone Line
-// Update a Telephone Line
-router.put('/:id', authenticate, async (req, res) => {
-  try {
-    const telephoneLine = await TelephoneLine.findByPk(req.params.id);
-    if (!telephoneLine) {
-      return res.status(404).json({ error: 'Telephone Line not found' });
-    }
-
-    const updatedData = req.body;
-    const changes = [];
-
-    for (const key in updatedData) {
-      if (key !== 'createdAt' && key !== 'updatedAt' && telephoneLine[key] !== updatedData[key]) {
-        changes.push({
-          telephoneLineId: telephoneLine.id,
-          userId: req.user.id,
-          field: key,
-          oldValue: telephoneLine[key] ? telephoneLine[key].toString() : null,
-          newValue: updatedData[key] ? updatedData[key].toString() : null,
-          modifiedAt: new Date(),
-        });
-      }
-    }
-
-    if (changes.length > 0) {
-      await TelephoneLineModification.bulkCreate(changes);
-    }
-
-    const updatedTelephoneLine = await telephoneLine.update(updatedData);
-    res.json(updatedTelephoneLine);
-  } catch (err) {
-    console.error('Error updating Telephone Line:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
+router.put('/:id', authenticate, telephoneLineController.updateTelephoneLine);
 
 // Delete a Telephone Line
-router.delete('/:id', authenticate, telephoneLineController.deleteTelephoneLine);
+router.delete('/:id', authenticate, isAdmin, telephoneLineController.deleteTelephoneLine);
 
 // Get Telephone Line modification history
-router.get('/admin/telephone-line-modifications', authenticate, async (req, res) => {
+router.get('/admin/telephone-line-modifications', authenticate, isAdmin, async (req, res) => {
   try {
     const modifications = await TelephoneLineModification.findAll({
       include: [
@@ -75,7 +41,7 @@ router.get('/admin/telephone-line-modifications', authenticate, async (req, res)
 });
 
 // Reset Telephone Line modification history
-router.delete('/admin/telephone-line-modifications', authenticate, async (req, res) => {
+router.delete('/admin/telephone-line-modifications', authenticate, isAdmin, async (req, res) => {
   try {
     await TelephoneLineModification.destroy({
       where: {},
@@ -87,7 +53,6 @@ router.delete('/admin/telephone-line-modifications', authenticate, async (req, r
     res.status(500).json({ error: error.message });
   }
 });
-
 
 // Get distinct values for dropdowns
 router.get('/dropdown/:field', authenticate, async (req, res) => {
@@ -126,19 +91,27 @@ router.get('/dropdown/:field', authenticate, async (req, res) => {
   }
 });
 
-// Drop the Telephone Lines table
-router.delete('/admin/drop-telephone-lines-table', authenticate, async (req, res) => {
+router.delete('/admin/drop-telephone-lines-table', authenticate, isAdmin, async (req, res) => {
   try {
-    await TelephoneLine.destroy({
-      where: {},
-      truncate: true
+    console.log('Dropping Telephone Lines table...');
+
+    // Delete dependent rows in TelephoneLineModification table
+    await TelephoneLineModification.destroy({
+      where: {}
     });
+    
+    // Now delete all rows in the TelephoneLine table
+    await TelephoneLine.destroy({
+      where: {}
+    });
+
+    console.log('Telephone Lines table dropped successfully');
     res.status(204).send();
   } catch (err) {
-    console.error('Error dropping Telephone Line table:', err.message);
+    console.error('Error dropping Telephone Line table:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
-
+  
 
 module.exports = router;

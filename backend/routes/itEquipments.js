@@ -3,8 +3,9 @@ const router = express.Router();
 const ITEquipment = require('../models/ITEquipment');
 const ITEquipmentModification = require('../models/ITEquipmentModification');
 const User = require('../models/user');
-const { authenticate } = require('../middleware/authMiddleware');
+const { authenticate, isAdmin} = require('../middleware/authMiddleware');
 const { Op, fn, col } = require('sequelize');
+
 
 // Helper function to replace null or empty values with default value
 const setDefaultValues = (data, defaultValue = '------') => {
@@ -23,7 +24,7 @@ const setDefaultValues = (data, defaultValue = '------') => {
 };
 
 // In the backend route for fetching all IT equipments
-router.get('/it-equipments/all', authenticate, async (req, res) => {
+router.get('/all', authenticate, async (req, res) => {
   try {
     const allEquipments = await ITEquipment.findAll();
     const processedEquipments = allEquipments.map(equipment => setDefaultValues(equipment.dataValues));
@@ -46,38 +47,56 @@ router.get('/it-equipments/all', authenticate, async (req, res) => {
   }
 });
 
-// Get all IT equipments with unique values
-router.get('/it-equipments', authenticate, async (req, res) => {
+// Fetch all IT equipments
+// Fetch all IT equipments
+router.get('/', authenticate, async (req, res) => {
+  console.log('Fetching all IT equipments...');
   try {
-    console.log('Fetching all IT equipments...');
-
     const allEquipments = await ITEquipment.findAll(); // Fetch all equipments
+    console.log('Fetched equipments from database:', allEquipments);
 
-    const processedEquipments = allEquipments.map(equipment => setDefaultValues(equipment.dataValues));
+    if (!allEquipments || allEquipments.length === 0) {
+      return res.status(404).json({ message: 'No IT equipment found' });
+    }
+
+    const processedEquipments = allEquipments.map(equipment => {
+      if (equipment && equipment.dataValues) {
+        return setDefaultValues(equipment.dataValues);
+      } else {
+        console.error('Invalid equipment data:', equipment);
+        return null;
+      }
+    }).filter(equipment => equipment !== null);
+
+    if (processedEquipments.length === 0) {
+      return res.status(500).json({ message: 'Failed to process IT equipment data' });
+    }
+
+    console.log('Processed equipments:', processedEquipments);
 
     // Extract unique values and format them correctly
-    const uniqueValues = Object.keys(processedEquipments[0]).reduce((acc, key) => {
+    const uniqueValues = Object.keys(processedEquipments[0] || {}).reduce((acc, key) => {
       acc[key] = [...new Set(processedEquipments.map(item => item[key]))]
         .filter(value => value !== null && value !== '------')  // Filter out null and default values
         .map(value => ({ label: value, value }));  // Format as { label, value }
       return acc;
     }, {});
 
-    console.log('Fetched and processed equipments:', processedEquipments);
+    console.log('Unique values for dropdowns:', uniqueValues);
 
     res.json({
       equipments: processedEquipments,
       uniqueValues: uniqueValues,
     });
   } catch (err) {
-    console.error('Error fetching IT equipments:', err.message);
+    console.error('Error fetching IT equipments:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
 
 
 // Create a new IT equipment
-router.post('/it-equipments', authenticate, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   try {
     const newEquipmentData = setDefaultValues(req.body);
     const newEquipment = await ITEquipment.create(newEquipmentData);
@@ -90,7 +109,7 @@ router.post('/it-equipments', authenticate, async (req, res) => {
 });
 
 // Delete an IT equipment
-router.delete('/it-equipments/:id', authenticate, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     await ITEquipment.destroy({ where: { id: req.params.id } });
     res.status(204).send();
@@ -101,7 +120,7 @@ router.delete('/it-equipments/:id', authenticate, async (req, res) => {
 });
 
 // Update an IT equipment
-router.put('/it-equipments/:id', authenticate, async (req, res) => {
+router.put('/:id', authenticate, async (req, res) => {
   try {
     const equipment = await ITEquipment.findByPk(req.params.id);
     if (!equipment) {
@@ -168,7 +187,6 @@ router.delete('/admin/it-equipment-modifications', authenticate, async (req, res
   }
 });
 
-
 // Get unique values
 router.get('/unique-values/:field', authenticate, async (req, res) => {
   try {
@@ -184,15 +202,24 @@ router.get('/unique-values/:field', authenticate, async (req, res) => {
 });
 
 // Route to drop the IT Equipment table
-router.delete('/admin/drop-it-equipment-table', authenticate, async (req, res) => {
+router.delete('/admin/drop-it-equipments-table', authenticate, isAdmin, async (req, res) => {
   try {
-    await ITEquipment.destroy({
-      where: {},
-      truncate: true
+    console.log('Dropping IT Equipment table...');
+
+    // Delete dependent rows in ITEquipmentModification table
+    await ITEquipmentModification.destroy({
+      where: {}
     });
+    
+    // Now delete all rows in the ITEquipment table
+    await ITEquipment.destroy({
+      where: {}
+    });
+
+    console.log('IT Equipment table dropped successfully');
     res.status(204).send();
   } catch (err) {
-    console.error('Error dropping IT Equipment table:', err.message);
+    console.error('Error dropping IT Equipment table:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });

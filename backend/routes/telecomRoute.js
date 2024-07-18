@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const telecomPackController = require('../controllers/telecomPackController');
-const { authenticate } = require('../middleware/authMiddleware');
+const { authenticate, isAdmin } = require('../middleware/authMiddleware');
 const TelecomPackModification = require('../models/TelecomPackModification');
 const User = require('../models/user');
 const TelecomPack = require('../models/TelecomPack');
@@ -92,7 +92,6 @@ router.delete('/admin/telecom-pack-modifications', authenticate, async (req, res
 });
 
 
-
 // Get distinct values for dropdowns
 router.get('/dropdown/:field', authenticate, async (req, res) => {
   try {
@@ -135,15 +134,24 @@ router.get('/dropdown/:field', authenticate, async (req, res) => {
 });
 
 // Route to drop the Telecom Pack table
-router.delete('/admin/drop-telecom-pack-table', authenticate, async (req, res) => {
+router.delete('/admin/drop-telecom-packs-table', authenticate, isAdmin, async (req, res) => {
   try {
-    await TelecomPack.destroy({
-      where: {},
-      truncate: true
+    console.log('Dropping Telecom Pack table...');
+
+    // Delete dependent rows in TelecomPackModification table
+    await TelecomPackModification.destroy({
+      where: {}
     });
+
+    // Now delete all rows in the TelecomPack table
+    await TelecomPack.destroy({
+      where: {}
+    });
+
+    console.log('Telecom Pack table dropped successfully');
     res.status(204).send();
   } catch (err) {
-    console.error('Error dropping Telecom Pack table:', err.message);
+    console.error('Error dropping Telecom Pack table:', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });

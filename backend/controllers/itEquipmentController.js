@@ -113,3 +113,13 @@ exports.deleteITEquipment = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+exports.getAllITEquipments = async (req, res) => {
+  try {
+    const itEquipments = await ITEquipment.findAll();
+    res.json({ equipments: itEquipments });
+  } catch (err) {
+    console.error('Error fetching IT Equipments:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+};
