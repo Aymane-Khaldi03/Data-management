@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, Redirect } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import './Dashboard.css';
 
@@ -10,6 +10,10 @@ const ConsultantDashboard = () => {
   const handleNavigation = (path) => {
     history.push(path);
   };
+
+  if (!user) {
+    return <Redirect to="/login" />;
+  }
 
   return (
     <div className="dashboard">

@@ -3,7 +3,6 @@ import { Route, Switch, Redirect, useLocation, BrowserRouter as Router } from 'r
 import Home from './pages/Home';
 import Login from './components/Auth/Login';
 import Signup from './components/Auth/Signup';
-import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ConsultantDashboard from './pages/ConsultantDashboard';
 import Navbar from './components/Shared/Navbar';
@@ -23,24 +22,27 @@ import TelephoneLineView from './components/Dashboard/TelephoneLineView';
 import './App.css';
 
 const AppContent = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
 
   const showSidebar = !['/', '/signup', '/login'].includes(location.pathname);
-  const isAuthenticated = !!user;
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user && location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/') {
+    return <Redirect to="/login" />;
+  }
 
   const getDashboardComponent = () => {
-    if (!isAuthenticated) {
-      return <Redirect to="/login" />;
-    }
-
-    switch (user.role) {
+    switch (user?.role) {
       case 'admin':
         return <AdminDashboard />;
       case 'consultant':
         return <ConsultantDashboard />;
       default:
-        return <Dashboard />;
+        return <Redirect to="/login" />;
     }
   };
 
@@ -53,7 +55,7 @@ const AppContent = () => {
           <Route path="/" exact component={Home} />
           <Route path="/login" component={Login} />
           <Route path="/signup" component={Signup} />
-          <Route path="/dashboard" exact render={getDashboardComponent} />
+          <Route path="/dashboard" render={getDashboardComponent} />
           
           <Route path="/it-equipment" exact component={ITEquipmentLanding} />
           <Route path="/it-equipment-manager" component={ITEquipment} />
@@ -68,6 +70,11 @@ const AppContent = () => {
           <Route path="/telephone-line-view" component={TelephoneLineView} />
 
           <Route path="/edit-excel" component={ExcelEditor} />
+
+          {/* Redirect to login if trying to access other routes without authentication */}
+          <Route path="*">
+            {user ? <Redirect to="/dashboard" /> : <Redirect to="/login" />}
+          </Route>
         </Switch>
       </div>
     </div>

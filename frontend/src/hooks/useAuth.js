@@ -1,4 +1,4 @@
-import { useState, useContext, createContext, useEffect } from 'react';
+import React, { useState, useContext, createContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 
 const AuthContext = createContext();
@@ -14,7 +14,23 @@ export const useAuth = () => {
 
 const useProvideAuth = () => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const history = useHistory();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        const loggedInUser = { email: decodedToken.user.email, role: decodedToken.user.role, fullName: decodedToken.user.fullName };
+        setUser(loggedInUser);
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        localStorage.removeItem('token');
+      }
+    }
+    setLoading(false);
+  }, []);
 
   const login = async (email, password) => {
     try {
@@ -57,11 +73,13 @@ const useProvideAuth = () => {
         const decodedToken = JSON.parse(atob(data.token.split('.')[1]));
         localStorage.setItem('token', data.token);
         setUser({ email, role: decodedToken.user.role, fullName: decodedToken.user.fullName });
+        setLoading(false);
       } else {
         const error = await response.json();
         throw new Error(error.msg || 'Signup failed');
       }
     } catch (error) {
+      setLoading(false);
       throw new Error('Server error: ' + error.message);
     }
   };
@@ -69,22 +87,15 @@ const useProvideAuth = () => {
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
-    history.push('/login'); // Redirect to login page upon logout
+    history.push('/login');
   };
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decodedToken = JSON.parse(atob(token.split('.')[1]));
-      const loggedInUser = { email: decodedToken.user.email, role: decodedToken.user.role, fullName: decodedToken.user.fullName };
-      setUser(loggedInUser);
-    }
-  }, []);
 
   return {
     user,
+    setUser,
     login,
     signup,
     logout,
+    loading,
   };
 };

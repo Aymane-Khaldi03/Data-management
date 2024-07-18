@@ -3,6 +3,7 @@ import './Home.css';
 import backgroundImage from '../assets/bp.avif'; // Adjust the path as necessary
 
 const Home = () => {
+  console.log('Home component rendered');
   return (
     <div className="home">
       <div className="home-content">

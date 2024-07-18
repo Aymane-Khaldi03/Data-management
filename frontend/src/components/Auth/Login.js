@@ -21,13 +21,13 @@ const Login = () => {
       setTimeout(() => {
         switch (user.role) {
           case 'admin':
-            history.push('/admin-dashboard');
+            history.push('/dashboard'); // Updated path to match the AppContent routes
             break;
           case 'consultant':
-            history.push('/consultant-dashboard');
+            history.push('/dashboard'); // Updated path to match the AppContent routes
             break;
           default:
-            history.push('/dashboard');
+            history.push('/dashboard'); // Default path to match the AppContent routes
             break;
         }
       }, 2000);

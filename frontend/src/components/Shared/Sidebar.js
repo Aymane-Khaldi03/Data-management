@@ -14,7 +14,6 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     logout();
-    history.push('/login'); // Redirect to login page upon logout
   };
 
   return (

@@ -5,44 +5,15 @@ import axios from 'axios';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const history = useHistory();
-  const [userHistory, setUserHistory] = useState([]);
+    const [userHistory, setUserHistory] = useState([]);
   const [modificationHistory, setModificationHistory] = useState([]);
   const [telecomModificationHistory, setTelecomModificationHistory] = useState([]);
   const [telephoneLineModificationHistory, setTelephoneLineModificationHistory] = useState([]);
 
   const handleNavigation = (path) => {
     history.push(path);
-  };
-
-  useEffect(() => {
-    fetchUserHistory();
-    fetchModificationHistory();
-    fetchTelecomModificationHistory();
-    fetchTelephoneLineModificationHistory(); // Add this line
-  }, []);
-
-  const fetchTelephoneLineModificationHistory = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/telephone-lines/admin/telephone-line-modifications', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Fetched Telephone Line Modifications:', data);
-        setTelephoneLineModificationHistory(data);
-      } else {
-        console.error('Failed to fetch telephone line modification history');
-      }
-    } catch (error) {
-      console.error('Error fetching telephone line modification history:', error);
-    }
   };
 
   const fetchUserHistory = async () => {
@@ -111,6 +82,55 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchTelephoneLineModificationHistory = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/telephone-lines/admin/telephone-line-modifications', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Fetched Telephone Line Modifications:', data);
+        setTelephoneLineModificationHistory(data);
+      } else {
+        console.error('Failed to fetch telephone line modification history');
+      }
+    } catch (error) {
+      console.error('Error fetching telephone line modification history:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!loading) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        history.push('/login');
+      }
+    }
+  }, [loading, history]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserHistory();
+      fetchModificationHistory();
+      fetchTelecomModificationHistory();
+      fetchTelephoneLineModificationHistory();
+    }
+  }, [user]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return null;
+  }
+
+
   const handleResetModificationHistory = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/admin/it-equipment-modifications', {
@@ -177,16 +197,16 @@ const AdminDashboard = () => {
       try {
         const requestUrl = `http://localhost:5000/api/telephone-lines/admin/drop-${table}-table`;
         console.log(`Request URL: ${requestUrl}`);
-  
+
         const response = await axios.delete(requestUrl, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-  
+
         console.log("Response:", response);
-  
+
         if (response.status === 204) {
           console.log(`${table} table dropped successfully`);
         } else {
@@ -209,7 +229,6 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <div className="admin-dashboard-content">
         <h1 className="admin-dashboard-title">Admin Dashboard</h1>
-
         <div className="admin-user-history-section">
           <h2>Historique de connexion utilisateur</h2>
           {userHistory.length > 0 ? (
