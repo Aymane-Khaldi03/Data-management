@@ -25,12 +25,19 @@ const formatDate = (date) => {
 // Function to set default values for materiel informatique and format dates
 const setDefaultValuesMaterielInformatique = (data, defaultValue = '------') => {
   const defaultDateFields = ['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'];
+  const notNullFields = ['numero_facture', 'prix_achat', 'numero_appel_offre'];
+
   return Object.fromEntries(
     Object.entries(data).map(([key, value]) => {
-      if (value === '' || value === null) {
+      if (value === '' || value === null || value === undefined) {
         if (defaultDateFields.includes(key)) {
+          console.log(`Setting default value for date field ${key}`);
           return [key, null];  // Set date fields to null if empty
+        } else if (notNullFields.includes(key)) {
+          console.log(`Setting default value for not-null field ${key}`);
+          return [key, defaultValue];  // Set not-null fields to default value
         } else {
+          console.log(`Setting default value for field ${key}`);
           return [key, defaultValue];  // Set other fields to default value
         }
       }
@@ -46,6 +53,7 @@ const setDefaultValuesMaterielInformatique = (data, defaultValue = '------') => 
     })
   );
 };
+
 
 // Function to set default values for parc telecom and format dates
 const setDefaultValuesParcTelecom = (data, defaultValue = '') => {
@@ -72,7 +80,11 @@ const setDefaultValues = (data, defaultValue = '------') => {
   return Object.fromEntries(
     Object.entries(data).map(([key, value]) => {
       if (value === '' || value === null) {
-        return [key, defaultValue];
+        if (['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'].includes(key)) {
+          return [key, null];  // Set date fields to null if empty
+        } else {
+          return [key, defaultValue];  // Set other fields to default value
+        }
       }
       return [key, value];
     })
@@ -85,9 +97,9 @@ const filterAndSetDefaults = (data, table) => {
     it_equipments: [
       'categorie', 'marque', 'model', 'code_materiel', 'serie', 'code_localisation',
       'code_entite', 'date_installation', 'fin_garantie', 'statut', 'type_acquisition',
-      'date_achat', 'date_livraison', 'fournisseur', 'prix_achat', 'numero_appel_offre', 'numero_facture',
-      'numero_livraison', 'cout_maintenance', 'emploi_principal', 'niveau_criticite', 'sla',
-      'date_sortie'
+      'date_achat', 'date_livraison', 'fournisseur', 'prix_achat', 'numero_appel_offre', 
+      'numero_facture', 'numero_livraison', 'cout_maintenance', 'emploi_principal', 
+      'niveau_criticite', 'sla', 'date_sortie', 'commentaire' // Add 'commentaire' field here
     ],
     telecom_pack: [
       'entite', 'operateur', 'produit2', 'numero', 'etatAbonnement', 'dateAbonnement',
@@ -98,8 +110,6 @@ const filterAndSetDefaults = (data, table) => {
       'categorie', 'poste_GSM'
     ]
   };
-
-  const selectedColumns = tableColumns[table];
 
   const columnMapping = {
     it_equipments: {
@@ -125,7 +135,8 @@ const filterAndSetDefaults = (data, table) => {
       'emploi principal': 'emploi_principal',
       'niveau de criticité': 'niveau_criticite',
       'sla': 'sla',
-      'date de sortie': 'date_sortie'
+      'date de sortie': 'date_sortie',
+      'commentaire': 'commentaire' // Add 'commentaire' field here
     },
     telephone_lines: {
       'numero_de_gsm': 'numero_de_gsm',
@@ -188,6 +199,7 @@ const getUniqueColumn = (table) => {
   }
 };
 
+// Inside the router.post handler for '/:table'
 router.post('/:table', authenticate, async (req, res) => {
   try {
     const table = req.params.table;
@@ -261,12 +273,29 @@ router.post('/:table', authenticate, async (req, res) => {
     for (const record of filteredData) {
       try {
         const whereClause = {};
-        whereClause[uniqueColumn] = record[uniqueColumn];
+        whereClause[uniqueColumn] = record[uniqueColumn].toString(); // Ensure `uniqueColumn` is treated as string
 
         // Ensure `uniqueColumn` is present and not undefined
         if (!record[uniqueColumn]) {
           console.error(`Record missing unique column ${uniqueColumn}:`, record);
           continue;
+        }
+
+        // Log the values before the operation
+        console.log(`Processing record with numero_facture: ${record.numero_facture}, prix_achat: ${record.prix_achat}, numero_appel_offre: ${record.numero_appel_offre}`);
+
+        // Ensure numero_facture, prix_achat, and numero_appel_offre have default values if not present
+        if (!record.numero_facture) {
+          console.log('Setting default value for numero_facture');
+          record.numero_facture = '------';
+        }
+        if (!record.prix_achat) {
+          console.log('Setting default value for prix_achat');
+          record.prix_achat = 0;
+        }
+        if (!record.numero_appel_offre) {
+          console.log('Setting default value for numero_appel_offre');
+          record.numero_appel_offre = '------';
         }
 
         // Find the existing record based on unique column
