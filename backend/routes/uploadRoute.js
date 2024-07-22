@@ -1,5 +1,3 @@
-// routes/uploadRoute.js
-
 const express = require('express');
 const router = express.Router();
 const XLSX = require('xlsx');
@@ -9,7 +7,8 @@ const TelecomPack = require('../models/TelecomPack');
 const TelephoneLine = require('../models/TelephoneLine');
 const { authenticate } = require('../middleware/authMiddleware');
 
-// Function to handle date conversion from Excel serial date to JS Date
+const uploadProgress = {};
+
 const excelDateToJSDate = (serial) => {
   const excelEpoch = new Date(Date.UTC(1899, 11, 30));
   const daysOffset = Math.floor(serial);
@@ -17,12 +16,10 @@ const excelDateToJSDate = (serial) => {
   return new Date(excelEpoch.getTime() + daysOffset * 86400 * 1000 + millisecondsOffset);
 };
 
-// Function to format date to YYYY-MM-DD
 const formatDate = (date) => {
   return moment(date).format('YYYY-MM-DD');
 };
 
-// Function to set default values for materiel informatique and format dates
 const setDefaultValuesMaterielInformatique = (data, defaultValue = '------') => {
   const defaultDateFields = ['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'];
   const notNullFields = ['numero_facture', 'prix_achat', 'numero_appel_offre'];
@@ -32,30 +29,28 @@ const setDefaultValuesMaterielInformatique = (data, defaultValue = '------') => 
       if (value === '' || value === null || value === undefined) {
         if (defaultDateFields.includes(key)) {
           console.log(`Setting default value for date field ${key}`);
-          return [key, null];  // Set date fields to null if empty
+          return [key, null];
         } else if (notNullFields.includes(key)) {
           console.log(`Setting default value for not-null field ${key}`);
-          return [key, defaultValue];  // Set not-null fields to default value
+          return [key, defaultValue];
         } else {
           console.log(`Setting default value for field ${key}`);
-          return [key, defaultValue];  // Set other fields to default value
+          return [key, defaultValue];
         }
       }
       if (defaultDateFields.includes(key)) {
         if (!isNaN(value)) {
-          value = excelDateToJSDate(value);  // Convert Excel serial date to JS Date
+          value = excelDateToJSDate(value);
         }
         const formattedDate = moment(value, ['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'], true).isValid() ?
           formatDate(value) : null;
-        return [key, formattedDate];  // Format date fields
+        return [key, formattedDate];
       }
       return [key, value];
     })
   );
 };
 
-
-// Function to set default values for parc telecom and format dates
 const setDefaultValuesParcTelecom = (data, defaultValue = '') => {
   return Object.fromEntries(
     Object.entries(data).map(([key, value]) => {
@@ -64,26 +59,25 @@ const setDefaultValuesParcTelecom = (data, defaultValue = '') => {
       }
       if (['dateAbonnement', 'dateReengagement', 'dateEtat'].includes(key)) {
         if (!isNaN(value)) {
-          value = excelDateToJSDate(value);  // Convert Excel serial date to JS Date
+          value = excelDateToJSDate(value);
         }
         const formattedDate = moment(value, ['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'], true).isValid() ?
           formatDate(value) : null;
-        return [key, formattedDate];  // Format date fields
+        return [key, formattedDate];
       }
       return [key, value];
     })
   );
 };
 
-// Function to set default values for general fields
 const setDefaultValues = (data, defaultValue = '------') => {
   return Object.fromEntries(
     Object.entries(data).map(([key, value]) => {
       if (value === '' || value === null) {
         if (['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'].includes(key)) {
-          return [key, null];  // Set date fields to null if empty
+          return [key, null];
         } else {
-          return [key, defaultValue];  // Set other fields to default value
+          return [key, defaultValue];
         }
       }
       return [key, value];
@@ -91,7 +85,6 @@ const setDefaultValues = (data, defaultValue = '------') => {
   );
 };
 
-// Helper function to filter and set default values for the data based on the table
 const filterAndSetDefaults = (data, table) => {
   const tableColumns = {
     it_equipments: [
@@ -99,7 +92,7 @@ const filterAndSetDefaults = (data, table) => {
       'code_entite', 'date_installation', 'fin_garantie', 'statut', 'type_acquisition',
       'date_achat', 'date_livraison', 'fournisseur', 'prix_achat', 'numero_appel_offre', 
       'numero_facture', 'numero_livraison', 'cout_maintenance', 'emploi_principal', 
-      'niveau_criticite', 'sla', 'date_sortie', 'commentaire' // Add 'commentaire' field here
+      'niveau_criticite', 'sla', 'date_sortie', 'commentaire'
     ],
     telecom_pack: [
       'entite', 'operateur', 'produit2', 'numero', 'etatAbonnement', 'dateAbonnement',
@@ -136,7 +129,7 @@ const filterAndSetDefaults = (data, table) => {
       'niveau de criticité': 'niveau_criticite',
       'sla': 'sla',
       'date de sortie': 'date_sortie',
-      'commentaire': 'commentaire' // Add 'commentaire' field here
+      'commentaire': 'commentaire'
     },
     telephone_lines: {
       'numero_de_gsm': 'numero_de_gsm',
@@ -178,14 +171,13 @@ const filterAndSetDefaults = (data, table) => {
     } else if (table === 'telecom_pack') {
       filteredRecord = setDefaultValuesParcTelecom(filteredRecord);
     } else if (table === 'telephone_lines') {
-      filteredRecord = setDefaultValues(filteredRecord);  // Apply default values to telephone lines
-      filteredRecord.numero_de_gsm = String(filteredRecord.numero_de_gsm);  // Ensure numero_de_gsm is a string
+      filteredRecord = setDefaultValues(filteredRecord);
+      filteredRecord.numero_de_gsm = String(filteredRecord.numero_de_gsm);
     }
     return filteredRecord;
   });
 };
 
-// Helper function to get unique column for each table
 const getUniqueColumn = (table) => {
   switch (table) {
     case 'it_equipments':
@@ -199,8 +191,9 @@ const getUniqueColumn = (table) => {
   }
 };
 
-// Inside the router.post handler for '/:table'
 router.post('/:table', authenticate, async (req, res) => {
+  const uploadId = generateUniqueId();
+  uploadProgress[uploadId] = 0;
   try {
     const table = req.params.table;
     const file = req.files?.file;
@@ -268,23 +261,20 @@ router.post('/:table', authenticate, async (req, res) => {
 
     console.log('Filtered data:', filteredData);
 
-    // Insert or update records
+    const totalRecords = filteredData.length;
     const createdRecords = [];
-    for (const record of filteredData) {
+    for (const [index, record] of filteredData.entries()) {
       try {
         const whereClause = {};
-        whereClause[uniqueColumn] = record[uniqueColumn].toString(); // Ensure `uniqueColumn` is treated as string
+        whereClause[uniqueColumn] = record[uniqueColumn].toString();
 
-        // Ensure `uniqueColumn` is present and not undefined
         if (!record[uniqueColumn]) {
           console.error(`Record missing unique column ${uniqueColumn}:`, record);
           continue;
         }
 
-        // Log the values before the operation
         console.log(`Processing record with numero_facture: ${record.numero_facture}, prix_achat: ${record.prix_achat}, numero_appel_offre: ${record.numero_appel_offre}`);
 
-        // Ensure numero_facture, prix_achat, and numero_appel_offre have default values if not present
         if (!record.numero_facture) {
           console.log('Setting default value for numero_facture');
           record.numero_facture = '------';
@@ -298,20 +288,20 @@ router.post('/:table', authenticate, async (req, res) => {
           record.numero_appel_offre = '------';
         }
 
-        // Find the existing record based on unique column
         const existingRecord = await Model.findOne({ where: whereClause });
 
         if (existingRecord) {
-          // Update the existing record
           await existingRecord.update(record);
           console.log(`Updated record for ${record[uniqueColumn]}`);
           createdRecords.push(existingRecord);
         } else {
-          // Create a new record
           const newRecord = await Model.create(record);
           console.log(`Created new record for ${record[uniqueColumn]}`);
           createdRecords.push(newRecord);
         }
+
+        uploadProgress[uploadId] = Math.round(((index + 1) / totalRecords) * 100);
+        req.app.get('io').emit('uploadProgress', { uploadId, progress: uploadProgress[uploadId] });
       } catch (error) {
         console.error('Error inserting or updating record into the database:', error);
         return res.status(500).json({ error: 'Error inserting or updating records into the database' });
@@ -319,11 +309,17 @@ router.post('/:table', authenticate, async (req, res) => {
     }
     console.log('Records created or updated:', createdRecords);
 
-    res.status(201).json({ message: 'Data uploaded successfully', records: createdRecords });
+    res.status(201).json({ message: 'Data uploaded successfully', records: createdRecords, uploadId });
   } catch (error) {
     console.error('Unexpected server error:', error);
     res.status(500).json({ error: 'Server error. Please try again later.' });
+  } finally {
+    delete uploadProgress[uploadId];
   }
 });
+
+function generateUniqueId() {
+  return Math.random().toString(36).substr(2, 9);
+}
 
 module.exports = router;

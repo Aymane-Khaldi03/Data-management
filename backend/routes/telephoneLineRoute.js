@@ -32,13 +32,14 @@ router.get('/admin/telephone-line-modifications', authenticate, isAdmin, async (
       ],
       order: [['modifiedAt', 'DESC']],
     });
-    console.log('Fetched Telephone Line Modifications:', JSON.stringify(modifications, null, 2));
+    console.log('Fetched Telephone Line Modifications:', JSON.stringify(modifications, null, 2)); // Debugging statement
     res.json(modifications);
   } catch (error) {
     console.error('Error fetching Telephone Line modification history:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Reset Telephone Line modification history
 router.delete('/admin/telephone-line-modifications', authenticate, isAdmin, async (req, res) => {

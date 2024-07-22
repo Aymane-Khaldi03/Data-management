@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
-import './ExcelEditor.css';
 import { FaFileExcel } from 'react-icons/fa';
+import io from 'socket.io-client';
+import './ExcelEditor.css';
+
+const socket = io('http://localhost:5000');
 
 const ExcelEditor = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -31,6 +34,16 @@ const ExcelEditor = () => {
     }
   }, [table]);
 
+  useEffect(() => {
+    socket.on('uploadProgress', ({ uploadId, progress }) => {
+      setUploadProgress(progress);
+    });
+
+    return () => {
+      socket.off('uploadProgress');
+    };
+  }, []);
+
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
   };
@@ -49,10 +62,6 @@ const ExcelEditor = () => {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percentCompleted);
         },
       });
 

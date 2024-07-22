@@ -33,8 +33,9 @@ const TelephoneLineModification = sequelize.define('TelephoneLineModification', 
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   },
+}, {
+  tableName: 'TelephoneLineModifications', // Specify the correct table name
 });
-
 TelephoneLineModification.belongsTo(TelephoneLine, { foreignKey: 'telephoneLineId' });
 TelephoneLineModification.belongsTo(User, { foreignKey: 'userId' });
 

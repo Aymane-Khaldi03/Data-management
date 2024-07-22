@@ -82,27 +82,28 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchTelephoneLineModificationHistory = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/telephone-lines/admin/telephone-line-modifications', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+// Fetch Telephone Line modification history
+const fetchTelephoneLineModificationHistory = async () => {
+  try {
+    const response = await fetch('http://localhost:5000/api/telephone-lines/admin/telephone-line-modifications', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Fetched Telephone Line Modifications:', data);
-        setTelephoneLineModificationHistory(data);
-      } else {
-        console.error('Failed to fetch telephone line modification history');
-      }
-    } catch (error) {
-      console.error('Error fetching telephone line modification history:', error);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Fetched Telephone Line Modifications:', data); // Debugging statement
+      setTelephoneLineModificationHistory(data);
+    } else {
+      console.error('Failed to fetch telephone line modification history');
     }
-  };
+  } catch (error) {
+    console.error('Error fetching telephone line modification history:', error);
+  }
+};
 
   useEffect(() => {
     if (!loading) {

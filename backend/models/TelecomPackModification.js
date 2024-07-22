@@ -41,6 +41,7 @@ const TelecomPackModification = sequelize.define('TelecomPackModification', {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   },
+  
 }, {
   tableName: 'TelecomPackModifications', // Specify the correct table name
 });
