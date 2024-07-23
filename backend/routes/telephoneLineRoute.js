@@ -25,6 +25,7 @@ router.delete('/:id', authenticate, isAdmin, telephoneLineController.deleteTelep
 // Get Telephone Line modification history
 router.get('/admin/telephone-line-modifications', authenticate, isAdmin, async (req, res) => {
   try {
+    console.log('Fetching Telephone Line modification history...'); // Debugging statement
     const modifications = await TelephoneLineModification.findAll({
       include: [
         { model: TelephoneLine, attributes: [] }, // Include only necessary attributes
@@ -35,7 +36,7 @@ router.get('/admin/telephone-line-modifications', authenticate, isAdmin, async (
     console.log('Fetched Telephone Line Modifications:', JSON.stringify(modifications, null, 2)); // Debugging statement
     res.json(modifications);
   } catch (error) {
-    console.error('Error fetching Telephone Line modification history:', error.message);
+    console.error('Error fetching Telephone Line modification history:', error.message); // Debugging statement
     res.status(500).json({ error: error.message });
   }
 });
@@ -114,5 +115,4 @@ router.delete('/admin/drop-telephone-lines-table', authenticate, isAdmin, async 
   }
 });
   
-
 module.exports = router;

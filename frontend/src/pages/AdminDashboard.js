@@ -85,6 +85,7 @@ const AdminDashboard = () => {
 // Fetch Telephone Line modification history
 const fetchTelephoneLineModificationHistory = async () => {
   try {
+    console.log('Fetching Telephone Line modification history...'); // Debugging statement
     const response = await fetch('http://localhost:5000/api/telephone-lines/admin/telephone-line-modifications', {
       method: 'GET',
       headers: {
@@ -96,12 +97,19 @@ const fetchTelephoneLineModificationHistory = async () => {
     if (response.ok) {
       const data = await response.json();
       console.log('Fetched Telephone Line Modifications:', data); // Debugging statement
+      if (data.length === 0) {
+        console.log('No modification records found'); // Debugging statement
+      } else {
+        data.forEach(mod => {
+          console.log('Modification Record:', JSON.stringify(mod, null, 2)); // Debugging statement for each record
+        });
+      }
       setTelephoneLineModificationHistory(data);
     } else {
-      console.error('Failed to fetch telephone line modification history');
+      console.error('Failed to fetch telephone line modification history, status:', response.status); // Debugging statement
     }
   } catch (error) {
-    console.error('Error fetching telephone line modification history:', error);
+    console.error('Error fetching telephone line modification history:', error); // Debugging statement
   }
 };
 
