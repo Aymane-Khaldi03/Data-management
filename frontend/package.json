@@ -8,6 +8,7 @@
     "date-fns": "^2.22.1",
     "exceljs": "^4.4.0",
     "react": "^17.0.2",
+    "react-confirm-alert": "^3.0.6",
     "react-data-grid": "^7.0.0-beta.44",
     "react-datepicker": "^3.6.0",
     "react-dom": "^17.0.2",
@@ -18,10 +19,12 @@
     "react-scripts": "^4.0.3",
     "react-select": "^5.8.0",
     "react-table": "^7.8.0",
+    "react-toastify": "^8.0.3",
     "react-virtualized": "^9.22.5",
     "redux": "^4.2.1",
     "socket.io-client": "^4.7.5",
     "styled-components": "^6.1.12",
+    "sweetalert2": "^11.12.3",
     "xlsx": "^0.18.5"
   },
   "scripts": {

@@ -4,9 +4,20 @@ import { useTable, useSortBy, useFilters } from 'react-table';
 import Select from 'react-select';
 import { useHistory } from 'react-router-dom';
 import * as XLSX from 'xlsx';
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import './ITEquipmentView.css';
 
+
+
 const ITEquipmentView = () => {
+  useEffect(() => {
+    toast.configure();
+  }, []);
+
   const [itEquipments, setITEquipments] = useState([]);
   const [originalData, setOriginalData] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -69,13 +80,13 @@ const ITEquipmentView = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-  
+
         if (response.data && Array.isArray(response.data.equipments)) {
           const data = response.data.equipments.map(({ createdAt, updatedAt, id, ...rest }) => setDefaultValues(rest));
           console.log('Fetched data from server:', data.length);
           setITEquipments(data);
           setOriginalData(data);
-  
+
           const headers = Object.keys(data[0] || {});
           const maxWidths = headers.reduce((acc, header) => {
             const headerWidth = measureTextWidth(header.replace(/_/g, ' '));
@@ -86,7 +97,7 @@ const ITEquipmentView = () => {
             acc[header] = maxLength;
             return acc;
           }, {});
-  
+
           const cols = [
             {
               Header: '#',
@@ -102,18 +113,17 @@ const ITEquipmentView = () => {
               width: maxWidths[header] + 20,
             })),
           ];
-  
+
           setColumns(cols);
         } else {
-          console.error('Unexpected response data format:', response.data);
-          alert('Error fetching IT Equipments: Unexpected response format');
+          console.error('Format de données de réponse inattendu :', response.data);
+          toast.error('Erreur lors de la récupération des équipements informatiques : format de réponse inattendu');
         }
       } catch (error) {
-        console.error('Error fetching IT Equipments:', error);
-        alert('Error fetching IT Equipments: ' + error.message);
+        console.error('Erreur lors de la récupération des équipements informatiques :', error);
+        toast.error('Erreur lors de la récupération des équipements informatiques : ' + error.message);
       }
     };
-  
     fetchITEquipments();
   }, []);
 
@@ -132,7 +142,7 @@ const ITEquipmentView = () => {
     }
     return updatedData;
   };
-  
+
   const filterData = (data) => {
     return data.filter(item => {
       const requiredFields = ['categorie', 'marque', 'model', 'statut', 'type_acquisition'];
@@ -237,9 +247,9 @@ const ITEquipmentView = () => {
       </div>
     );
   };
-
   return (
     <div className="itequipment-view-container">
+      <ToastContainer />
       <button className="itequipment-view-back-button" onClick={() => history.push('/it-equipment')}>
         &#x21a9;
       </button>
@@ -258,7 +268,7 @@ const ITEquipmentView = () => {
           }
         }}
       >
-        {viewType === 'general' ? 'Show Filtered Equipments' : 'Show General IT Equipments'}
+        {viewType === 'general' ? 'Afficher les équipements filtrés' : 'Afficher les équipements informatiques généraux'}
       </button>
       {columns.length > 0 && (
         <Table

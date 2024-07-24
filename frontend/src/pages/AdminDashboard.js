@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -200,8 +201,17 @@ const fetchTelephoneLineModificationHistory = async () => {
   };
 
   const handleDropTable = async (table) => {
-    const confirmDrop = window.confirm(`Are you sure you want to drop the ${table} table? This action cannot be undone.`);
-    if (confirmDrop) {
+    const result = await Swal.fire({
+      title: `Êtes-vous sûr de vouloir supprimer la table ${table}?`,
+      text: "Cette action ne peut pas être annulée.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Oui, supprimez-la !'
+    });
+
+    if (result.isConfirmed) {
       try {
         let requestUrl = '';
         if (table === 'it-equipments') {
@@ -211,30 +221,38 @@ const fetchTelephoneLineModificationHistory = async () => {
         } else if (table === 'telephone-lines') {
           requestUrl = 'http://localhost:5000/api/telephone-lines/admin/drop-telephone-lines-table';
         }
-  
+
         console.log(`Request URL: ${requestUrl}`);
-  
+
         const response = await axios.delete(requestUrl, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-  
+
         console.log("Response:", response);
-  
+
         if (response.status === 204) {
-          console.log(`${table} table dropped successfully`);
+          Swal.fire(
+            'Supprimée !',
+            `La table ${table} a été supprimée.`,
+            'success'
+          );
         } else {
-          console.error(`Failed to drop ${table} table: ${response.statusText}`);
+          console.error(`Échec de la suppression de la table ${table} : ${response.statusText}`);
         }
       } catch (error) {
-        console.error(`Error dropping ${table} table:`, error.message);
-        alert(`Error dropping ${table} table: ${error.message}`);
+        console.error(`Erreur lors de la suppression de la table ${table} :`, error.message);
+        Swal.fire(
+          'Error!',
+          `Erreur lors de la suppression de la table ${table} : ${error.message}`,
+          'error'
+        );
       }
     }
-  };  
-  
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
