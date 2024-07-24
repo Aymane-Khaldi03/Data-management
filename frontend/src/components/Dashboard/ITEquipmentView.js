@@ -69,13 +69,13 @@ const ITEquipmentView = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-
+  
         if (response.data && Array.isArray(response.data.equipments)) {
           const data = response.data.equipments.map(({ createdAt, updatedAt, id, ...rest }) => setDefaultValues(rest));
-          console.log('Fetched data:', data); // Debug logging
+          console.log('Fetched data from server:', data.length);
           setITEquipments(data);
-          setOriginalData(data); // Store the original data
-
+          setOriginalData(data);
+  
           const headers = Object.keys(data[0] || {});
           const maxWidths = headers.reduce((acc, header) => {
             const headerWidth = measureTextWidth(header.replace(/_/g, ' '));
@@ -86,23 +86,23 @@ const ITEquipmentView = () => {
             acc[header] = maxLength;
             return acc;
           }, {});
-
+  
           const cols = [
             {
               Header: '#',
               accessor: (row, i) => i + 1,
               disableFilters: true,
               disableSortBy: true,
-              width: 50, // Fixed width for the row number column
+              width: 50,
             },
             ...headers.map((header) => ({
               Header: header.replace(/_/g, ' '),
               accessor: header,
               Filter: SelectColumnFilter,
-              width: maxWidths[header] + 20, // Add some padding
+              width: maxWidths[header] + 20,
             })),
           ];
-
+  
           setColumns(cols);
         } else {
           console.error('Unexpected response data format:', response.data);
@@ -113,24 +113,26 @@ const ITEquipmentView = () => {
         alert('Error fetching IT Equipments: ' + error.message);
       }
     };
-
+  
     fetchITEquipments();
   }, []);
 
-  const setDefaultValues = (data, defaultValue = '------') => {
+  const setDefaultValues = (data, defaultValue = '------', defaultNumber = 0) => {
     const updatedData = { ...data };
     for (let key in updatedData) {
       if (updatedData[key] === '' || updatedData[key] === null) {
         if (['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'].includes(key)) {
-          updatedData[key] = null;  // Set date fields to null if empty
+          updatedData[key] = null;
+        } else if (key === 'prix_achat') {
+          updatedData[key] = defaultNumber;
         } else {
-          updatedData[key] = defaultValue;  // Set other fields to default value
+          updatedData[key] = defaultValue;
         }
       }
     }
     return updatedData;
   };
-
+  
   const filterData = (data) => {
     return data.filter(item => {
       const requiredFields = ['categorie', 'marque', 'model', 'statut', 'type_acquisition'];

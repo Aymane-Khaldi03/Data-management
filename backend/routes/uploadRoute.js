@@ -20,7 +20,7 @@ const formatDate = (date) => {
   return moment(date).format('YYYY-MM-DD');
 };
 
-const setDefaultValuesMaterielInformatique = (data, defaultValue = '------') => {
+const setDefaultValuesMaterielInformatique = (data, defaultValue = '------', defaultNumber = 0) => {
   const defaultDateFields = ['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'];
   const notNullFields = ['numero_facture', 'prix_achat', 'numero_appel_offre'];
 
@@ -28,13 +28,13 @@ const setDefaultValuesMaterielInformatique = (data, defaultValue = '------') => 
     Object.entries(data).map(([key, value]) => {
       if (value === '' || value === null || value === undefined) {
         if (defaultDateFields.includes(key)) {
-          console.log(`Setting default value for date field ${key}`);
           return [key, null];
         } else if (notNullFields.includes(key)) {
-          console.log(`Setting default value for not-null field ${key}`);
+          if (key === 'prix_achat') {
+            return [key, defaultNumber];
+          }
           return [key, defaultValue];
         } else {
-          console.log(`Setting default value for field ${key}`);
           return [key, defaultValue];
         }
       }
@@ -70,19 +70,27 @@ const setDefaultValuesParcTelecom = (data, defaultValue = '') => {
   );
 };
 
-const setDefaultValues = (data, defaultValue = '------') => {
-  return Object.fromEntries(
-    Object.entries(data).map(([key, value]) => {
-      if (value === '' || value === null) {
-        if (['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'].includes(key)) {
-          return [key, null];
+const setDefaultValues = (data, defaultValue = '------', defaultNumber = 0) => {
+  const updatedData = { ...data };
+  const defaultDateFields = ['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'];
+  const notNullFields = ['numero_facture', 'prix_achat', 'numero_appel_offre'];
+
+  for (let key in updatedData) {
+    if (updatedData[key] === '' || updatedData[key] === null || updatedData[key] === undefined) {
+      if (defaultDateFields.includes(key)) {
+        updatedData[key] = null;
+      } else if (notNullFields.includes(key)) {
+        if (key === 'prix_achat') {
+          updatedData[key] = defaultNumber;
         } else {
-          return [key, defaultValue];
+          updatedData[key] = defaultValue;
         }
+      } else {
+        updatedData[key] = defaultValue;
       }
-      return [key, value];
-    })
-  );
+    }
+  }
+  return updatedData;
 };
 
 const filterAndSetDefaults = (data, table) => {
@@ -178,10 +186,20 @@ const filterAndSetDefaults = (data, table) => {
   });
 };
 
+const validateData = (data, notNullFields) => {
+  for (let key of notNullFields) {
+    if (!data[key]) {
+      console.error(`Missing value for required field ${key}:`, data);
+      data[key] = '------';
+    }
+  }
+  return data;
+}
+
 const getUniqueColumn = (table) => {
   switch (table) {
     case 'it_equipments':
-      return 'code_materiel';
+      return 'serie';
     case 'telecom_pack':
       return 'entite';
     case 'telephone_lines':
@@ -223,7 +241,7 @@ router.post('/:table', authenticate, async (req, res) => {
       console.error('Error converting sheet to JSON:', err);
       return res.status(400).json({ error: 'Error converting sheet to JSON' });
     }
-    console.log('Data from file:', data);
+    console.log('Data from file:', data.length);
 
     if (!Array.isArray(data) || data.length === 0) {
       console.error('Invalid or empty Excel file');
@@ -231,85 +249,96 @@ router.post('/:table', authenticate, async (req, res) => {
     }
 
     let Model;
-    try {
-      switch (table) {
-        case 'it_equipments':
-          Model = ITEquipment;
-          break;
-        case 'telecom_pack':
-          Model = TelecomPack;
-          break;
-        case 'telephone_lines':
-          Model = TelephoneLine;
-          break;
-        default:
-          console.error('Invalid table name:', table);
-          return res.status(400).json({ error: 'Invalid table name' });
-      }
-    } catch (err) {
-      console.error('Error determining model:', err);
-      return res.status(500).json({ error: 'Server error determining model' });
+    switch (table) {
+      case 'it_equipments':
+        Model = ITEquipment;
+        break;
+      case 'telecom_pack':
+        Model = TelecomPack;
+        break;
+      case 'telephone_lines':
+        Model = TelephoneLine;
+        break;
+      default:
+        console.error('Invalid table name:', table);
+        return res.status(400).json({ error: 'Invalid table name' });
     }
 
-    const uniqueColumn = getUniqueColumn(table);
+    const notNullFields = ['numero_facture', 'prix_achat', 'numero_appel_offre'];
     const filteredData = filterAndSetDefaults(data, table).map(record => {
       const { id, createdAt, updatedAt, ...rest } = record;
+      const validatedRecord = validateData(rest, notNullFields);
       return Object.fromEntries(
-        Object.entries(rest).filter(([key]) => Model.rawAttributes.hasOwnProperty(key))
+        Object.entries(validatedRecord).filter(([key]) => Model.rawAttributes.hasOwnProperty(key))
       );
     });
 
-    console.log('Filtered data:', filteredData);
+    console.log('Filtered and validated data length:', filteredData.length);
 
     const totalRecords = filteredData.length;
     const createdRecords = [];
+    const skippedRecords = [];
+
     for (const [index, record] of filteredData.entries()) {
       try {
         const whereClause = {};
-        whereClause[uniqueColumn] = record[uniqueColumn].toString();
+        whereClause[getUniqueColumn(table)] = record[getUniqueColumn(table)]?.toString();
 
-        if (!record[uniqueColumn]) {
-          console.error(`Record missing unique column ${uniqueColumn}:`, record);
+        if (!record[getUniqueColumn(table)]) {
+          console.error(`Record missing unique column ${getUniqueColumn(table)}:`, record);
+          skippedRecords.push(record);
           continue;
-        }
-
-        console.log(`Processing record with numero_facture: ${record.numero_facture}, prix_achat: ${record.prix_achat}, numero_appel_offre: ${record.numero_appel_offre}`);
-
-        if (!record.numero_facture) {
-          console.log('Setting default value for numero_facture');
-          record.numero_facture = '------';
-        }
-        if (!record.prix_achat) {
-          console.log('Setting default value for prix_achat');
-          record.prix_achat = 0;
-        }
-        if (!record.numero_appel_offre) {
-          console.log('Setting default value for numero_appel_offre');
-          record.numero_appel_offre = '------';
         }
 
         const existingRecord = await Model.findOne({ where: whereClause });
 
         if (existingRecord) {
           await existingRecord.update(record);
-          console.log(`Updated record for ${record[uniqueColumn]}`);
           createdRecords.push(existingRecord);
         } else {
           const newRecord = await Model.create(record);
-          console.log(`Created new record for ${record[uniqueColumn]}`);
           createdRecords.push(newRecord);
         }
 
         uploadProgress[uploadId] = Math.round(((index + 1) / totalRecords) * 100);
         req.app.get('io').emit('uploadProgress', { uploadId, progress: uploadProgress[uploadId] });
       } catch (error) {
-        console.error('Error inserting or updating record into the database:', error);
-        return res.status(500).json({ error: 'Error inserting or updating records into the database' });
+        console.error('Error inserting or updating record into the database:', error, 'Record:', record);
+        skippedRecords.push(record);
       }
     }
-    console.log('Records created or updated:', createdRecords);
 
-    res.status(201).json({ message: 'Data uploaded successfully', records: createdRecords, uploadId });
+    console.log('Total records in file:', totalRecords);
+    console.log('Total created/updated records:', createdRecords.length);
+    console.log('Total skipped records:', skippedRecords.length);
+
+    // Log details of skipped records
+    if (skippedRecords.length > 0) {
+      console.log('Skipped records:', skippedRecords.map(record => record[getUniqueColumn(table)]));
+    }
+
+    // Fetch data from the database to compare
+    const allDatabaseRecords = await Model.findAll();
+    console.log('Total records in database after upload:', allDatabaseRecords.length);
+
+    // Compare uploaded data with database data
+    const uploadedIds = filteredData.map(record => record[getUniqueColumn(table)]);
+    const databaseIds = allDatabaseRecords.map(record => record[getUniqueColumn(table)]);
+    const missingInDatabase = uploadedIds.filter(id => !databaseIds.includes(id));
+    const extraInDatabase = databaseIds.filter(id => !uploadedIds.includes(id));
+
+    console.log('Missing in database:', missingInDatabase);
+    console.log('Extra in database:', extraInDatabase);
+
+    res.status(201).json({ 
+      message: 'Data uploaded successfully', 
+      totalRecords: totalRecords,
+      createdRecords: createdRecords.length, 
+      skippedRecords: skippedRecords.length,
+      uploadId,
+      missingInDatabase,
+      extraInDatabase 
+    });
   } catch (error) {
     console.error('Unexpected server error:', error);
     res.status(500).json({ error: 'Server error. Please try again later.' });

@@ -3,9 +3,8 @@ const router = express.Router();
 const ITEquipment = require('../models/ITEquipment');
 const ITEquipmentModification = require('../models/ITEquipmentModification');
 const User = require('../models/user');
-const { authenticate, isAdmin} = require('../middleware/authMiddleware');
+const { authenticate, isAdmin } = require('../middleware/authMiddleware');
 const { Op, fn, col } = require('sequelize');
-
 
 // Helper function to replace null or empty values with default value
 const setDefaultValues = (data, defaultValue = '------') => {
@@ -47,7 +46,6 @@ router.get('/all', authenticate, async (req, res) => {
   }
 });
 
-// Fetch all IT equipments
 // Fetch all IT equipments
 router.get('/', authenticate, async (req, res) => {
   console.log('Fetching all IT equipments...');
@@ -93,7 +91,6 @@ router.get('/', authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // Create a new IT equipment
 router.post('/', authenticate, async (req, res) => {
@@ -223,6 +220,31 @@ router.delete('/admin/drop-it-equipments-table', authenticate, isAdmin, async (r
     res.status(500).json({ error: err.message });
   }
 });
+router.delete('/remove-duplicates', authenticate, isAdmin, async (req, res) => {
+  try {
+    const duplicates = await ITEquipment.findAll({
+      attributes: ['serie', [fn('COUNT', col('serie')), 'count']],
+      group: ['serie'],
+      having: {
+        count: {
+          [Op.gt]: 1
+        }
+      }
+    });
 
+    const duplicateSeries = duplicates.map(duplicate => duplicate.serie);
+
+    for (const serie of duplicateSeries) {
+      const records = await ITEquipment.findAll({ where: { serie } });
+      const idsToDelete = records.slice(1).map(record => record.id); // Keep the first record, delete the rest
+      await ITEquipment.destroy({ where: { id: idsToDelete } });
+    }
+
+    res.status(200).json({ message: 'Duplicates removed successfully' });
+  } catch (error) {
+    console.error('Error removing duplicates:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 module.exports = router;
