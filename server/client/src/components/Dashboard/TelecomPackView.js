@@ -6,6 +6,7 @@ import { useHistory } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { FaSortUp, FaSortDown, FaSort } from 'react-icons/fa'; // Import icons
 import './TelecomPackView.css';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const TelecomPackView = () => {
   const [telecomPacks, setTelecomPacks] = useState([]);
@@ -17,7 +18,7 @@ const TelecomPackView = () => {
 
   const fetchTelecomPacks = async (appliedFilters = {}) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/telecom-packs', {
+      const response = await axios.get(`${API_URL}/api/telecom-packs`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
