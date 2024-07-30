@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { useTable, useSortBy, useFilters } from 'react-table';
 import Select from 'react-select';
 import './TelecomPack.css';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const subfieldOptionsMap = {
   'DATA': ['VPNLL', 'VPLS', 'VPNADSL', 'ADSLSECOURS'],
@@ -95,7 +96,7 @@ const TelecomPack = () => {
   useEffect(() => {
     const fetchTelecomPacks = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/telecom-packs', {
+        const response = await axios.get(`${API_URL}/api/telecom-packs`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -123,7 +124,7 @@ const TelecomPack = () => {
       const fields = ['entite', 'operateur', 'etatAbonnement', 'produit2', 'numero', 'dateAbonnement', 'dateReengagement', 'dateEtat', 'observation', 'typePoste', 'numeroDeSerie', 'dateAffectation'];
       const fetchedOptions = {};
       for (const field of fields) {
-        const response = await axios.get(`http://localhost:5000/api/telecom-packs/dropdown/${field}`, {
+        const response = await axios.get(`${API_URL}/api/telecom-packs/dropdown/${field}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -188,7 +189,7 @@ const TelecomPack = () => {
 
     try {
       const { produit, ...formattedPack } = setDefaultValues({ ...newPack });
-      const response = await axios.post('http://localhost:5000/api/telecom-packs', formattedPack, {
+      const response = await axios.post(`${API_URL}/api/telecom-packs`, formattedPack, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -236,7 +237,7 @@ const TelecomPack = () => {
   const handleUpdatePack = async () => {
     try {
       const { produit, ...formattedPack } = setDefaultValues({ ...currentPack }); // Exclude 'produit' from being sent
-      const response = await axios.put(`http://localhost:5000/api/telecom-packs/${currentPack.id}`, formattedPack, {
+      const response = await axios.put(`${API_URL}/api/telecom-packs/${currentPack.id}`, formattedPack, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -310,7 +311,7 @@ const TelecomPack = () => {
 
   const handleDeletePack = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/telecom-packs/${id}`, {
+      await axios.delete(`${API_URL}/api/telecom-packs/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
