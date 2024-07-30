@@ -16,6 +16,7 @@ const useProvideAuth = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const history = useHistory();
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -34,7 +35,7 @@ const useProvideAuth = () => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('http://localhost:5000/api/users/login', {
+      const response = await fetch(`${apiUrl}/api/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +61,7 @@ const useProvideAuth = () => {
 
   const signup = async (fullName, email, password, role) => {
     try {
-      const response = await fetch('http://localhost:5000/api/users/register', {
+      const response = await fetch(`${apiUrl}/api/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
