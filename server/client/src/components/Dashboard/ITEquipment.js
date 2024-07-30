@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { useTable, useSortBy, useFilters } from 'react-table';
 import Select from 'react-select';
 import './ITEquipment.css';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 // Helper function to set default values
 const setDefaultValues = (data, defaultValue = '------') => {
@@ -77,7 +78,7 @@ const ITEquipment = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:5000/api/it-equipments', {
+      const response = await axios.get(`${API_URL}/api/it-equipments`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -104,7 +105,7 @@ const ITEquipment = () => {
     try {
       const formattedEquipment = setDefaultValues(newEquipment);
       console.log('Adding equipment:', formattedEquipment);
-      const response = await axios.post('http://localhost:5000/api/it-equipments', formattedEquipment, {
+      const response = await axios.post(`${API_URL}/api/it-equipments`, formattedEquipment, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -154,7 +155,7 @@ const ITEquipment = () => {
 
       console.log('Token:', token);
 
-      await axios.delete(`http://localhost:5000/api/it-equipments/${id}`, {
+      await axios.delete(`${API_URL}/api/it-equipments/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -195,7 +196,7 @@ const ITEquipment = () => {
 
       const filteredEquipment = setDefaultValues(currentEquipment);
       console.log('Updating equipment:', filteredEquipment);
-      const response = await axios.put(`http://localhost:5000/api/it-equipments/${currentEquipment.id}`, filteredEquipment, {
+      const response = await axios.put(`${API_URL}/api/it-equipments/${currentEquipment.id}`, filteredEquipment, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
