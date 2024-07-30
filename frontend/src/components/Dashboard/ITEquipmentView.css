@@ -117,3 +117,24 @@
   background-color: #218838;
   transform: scale(1.05);
 }
+
+
+
+.itequipment-view-selected-filters-container {
+  margin: 20px 0;
+}
+
+.itequipment-view-filter-chip {
+  display: inline-block;
+  background-color: #e0e0e0;
+  border-radius: 15px;
+  padding: 5px 10px;
+  margin: 5px;
+}
+
+.itequipment-view-filter-chip button {
+  background: none;
+  border: none;
+  margin-left: 10px;
+  cursor: pointer;
+}

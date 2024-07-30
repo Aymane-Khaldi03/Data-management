@@ -9,12 +9,12 @@ const TelephoneLine = sequelize.define('TelephoneLine', {
     primaryKey: true,
   },
   numero_de_gsm: {
-    type: DataTypes.TEXT, //
+    type: DataTypes.STRING, //
     allowNull: false,
     unique: true,
   },
   full_name: {
-    type: DataTypes.TEXT, //
+    type: DataTypes.STRING, //
     allowNull: false,
   },
   code_entite: {

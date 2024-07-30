@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useHistory, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import loginpageimage from '../../assets/loginpageimage.jpg';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import styled from 'styled-components';
+import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
+import styled, { keyframes } from 'styled-components';
 
 const Login = () => {
   const { login } = useAuth();
@@ -13,15 +13,41 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState('');
   const [isHovering, setIsHovering] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberMeEmail');
+    const savedPassword = localStorage.getItem('rememberMePassword');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+    /* not saving the password
+    if (savedPassword) {
+      setPassword(savedPassword);
+    }
+      */
+
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const user = await login(email, password);
       setMessage('Login successful! Redirecting to dashboard...');
+      if (rememberMe) {
+        localStorage.setItem('rememberMeEmail', email);
+        //localStorage.setItem('rememberMePassword', password); // Optional: save password
+      } else {
+        localStorage.removeItem('rememberMeEmail');
+        //localStorage.removeItem('rememberMePassword');
+      }
 
       // Redirect based on role
       setTimeout(() => {
+        setIsLoading(false);
         switch (user.role) {
           case 'admin':
             history.push('/dashboard');
@@ -30,11 +56,12 @@ const Login = () => {
             history.push('/dashboard');
             break;
           default:
-            history.push('/dashboard');
+            history.push('/edit-excel');
             break;
         }
       }, 2000);
     } catch (error) {
+      setIsLoading(false);
       setMessage('Login failed: ' + error.message);
     }
   };
@@ -43,7 +70,7 @@ const Login = () => {
     <Container>
       <Background />
       <Title>Login</Title>
-      {message && <Message>{message}</Message>}
+      {message && <Message>{message} {isLoading && <Spinner />}</Message>}
       <Form onSubmit={handleSubmit}>
         <FormGroup>
           <Label>Email</Label>
@@ -63,6 +90,16 @@ const Login = () => {
             </EyeIcon>
           </PasswordInput>
         </FormGroup>
+        <AdditionalOptions>
+          <label>
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            /> Remember me
+          </label>
+          <StyledLink to="/forgot-password" onClick={() => console.log('Forgot Password link clicked')}>Forgot password?</StyledLink>
+        </AdditionalOptions>
         <Button
           type="submit"
           onMouseEnter={() => setIsHovering(true)}
@@ -71,14 +108,8 @@ const Login = () => {
         >
           Login
         </Button>
-        <AdditionalOptions>
-          <label>
-            <input type="checkbox" /> Remember me
-          </label>
-          <Link href="/forgot-password">Forgot password?</Link>
-        </AdditionalOptions>
         <Footer>
-          Not a member? <Link href="/signup">Signup Now</Link>
+          Not a member? <StyledLink to="/signup">Signup Now</StyledLink>
         </Footer>
       </Form>
     </Container>
@@ -180,10 +211,10 @@ const AdditionalOptions = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
+  margin-top: 15px;
 `;
 
-const Link = styled.a`
+const StyledLink = styled(Link)`
   color: #ef6108;
   text-decoration: none;
   font-size: 14px;
@@ -204,6 +235,17 @@ const Footer = styled.footer`
 const Message = styled.p`
   color: red;
   font-style: italic;
+  font-weight: bold;
+`;
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+const Spinner = styled(FaSpinner)`
+  margin-left: 10px;
+  animation: ${spin} 1s linear infinite;
 `;
 
 export default Login;

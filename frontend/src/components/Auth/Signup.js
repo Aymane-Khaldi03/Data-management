@@ -153,7 +153,7 @@ const EyeIcon = styled.div`
   position: absolute;
   right: 10px;
   cursor: pointer;
-    margin-top: 1px;
+  margin-top: -6px;
   font-size: 16px;
 `;
 

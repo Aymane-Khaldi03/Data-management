@@ -26,20 +26,23 @@ const getCustomHeaderName = (header) => {
     operateur: 'Opérateur',
     categorie: 'Catégorie',
     poste_GSM: 'Poste GSM',
-    // Add more mappings as needed
   };
   return customNames[header] || header.replace(/_/g, ' ');
 };
 
 const TelephoneLine = () => {
   const [telephoneLines, setTelephoneLines] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [options, setOptions] = useState({
     code_entite: [],
     direction: [],
     fonction: [],
     operateur: [],
     categorie: [],
+    poste_GSM: [],
   });
+  const [filters, setFilters] = useState({});
   const [newLine, setNewLine] = useState({
     numero_de_gsm: '',
     full_name: '',
@@ -57,7 +60,7 @@ const TelephoneLine = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10); // Define the page size
-  const totalPages = Math.ceil(telephoneLines.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -67,7 +70,7 @@ const TelephoneLine = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setCurrentPage(1); // Reset to the first page
   };
-  
+
   useEffect(() => {
     const fetchTelephoneLines = async () => {
       try {
@@ -77,36 +80,69 @@ const TelephoneLine = () => {
           },
         });
         const data = response.data.map(line => setDefaultValues(line));
-        setTelephoneLines(data);
+        setOriginalData(data);
+        applyFilters(data, filters); // Apply filters on initial load
       } catch (error) {
         console.error('Error fetching Telephone Lines:', error.message);
         alert('Failed to fetch telephone lines: ' + error.message);
       }
     };
 
-    const fetchDropdownOptions = async () => {
-      try {
-        const fields = ['direction', 'fonction', 'operateur', 'categorie', 'poste_GSM'];
-        const fetchedOptions = {};
-        for (const field of fields) {
-          const response = await axios.get(`http://localhost:5000/api/telephone-lines/dropdown/${field}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          });
-          const uniqueValues = Array.from(new Set(response.data.filter(value => value !== '').concat('------')));
-          fetchedOptions[field] = uniqueValues;
-        }
-        setOptions(fetchedOptions);
-      } catch (error) {
-        console.error('Error fetching dropdown options:', error.message);
-        alert('Failed to fetch dropdown options: ' + error.message);
-      }
-    };
-
     fetchTelephoneLines();
     fetchDropdownOptions();
-  }, [currentPage]);
+  }, []);
+
+  const fetchDropdownOptions = async () => {
+    try {
+      const fields = ['code_entite', 'direction', 'fonction', 'operateur', 'categorie', 'poste_GSM', 'numero_de_gsm', 'full_name'];
+      const fetchedOptions = {};
+      for (const field of fields) {
+        const response = await axios.get(`http://localhost:5000/api/telephone-lines/dropdown/${field}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        const uniqueValues = Array.from(new Set(response.data.filter(value => value !== '')));
+        fetchedOptions[field] = uniqueValues.map(value => ({ value, label: value }));
+      }
+      setOptions(fetchedOptions);
+    } catch (error) {
+      console.error('Error fetching dropdown options:', error.message);
+      alert('Failed to fetch dropdown options: ' + error.message);
+    }
+  };
+
+  const applyFilters = (data, appliedFilters) => {
+    let filteredData = data;
+
+    Object.keys(appliedFilters).forEach(filterKey => {
+      if (appliedFilters[filterKey].length > 0) {
+        filteredData = filteredData.filter(item => appliedFilters[filterKey].includes(item[filterKey]));
+      }
+    });
+
+    setFilteredData(filteredData);
+    setCurrentPage(1); // Reset to the first page after applying filters
+  };
+
+  const handleFilterChange = (field, selectedOptions) => {
+    const values = selectedOptions ? selectedOptions.map(option => option.value) : [];
+    setFilters(prevFilters => {
+      const updatedFilters = {
+        ...prevFilters,
+        [field]: values
+      };
+      applyFilters(originalData, updatedFilters);
+      return updatedFilters;
+    });
+  };
+
+  const handleRemoveFilter = (field, value) => {
+    const updatedValues = filters[field].filter(item => item !== value);
+    const updatedFilters = { ...filters, [field]: updatedValues };
+    setFilters(updatedFilters);
+    applyFilters(originalData, updatedFilters);
+  };
 
   const handleAddLine = async () => {
     if (!newLine.numero_de_gsm) {
@@ -122,7 +158,9 @@ const TelephoneLine = () => {
         },
       });
       const addedLine = response.data;
-      setTelephoneLines([...telephoneLines, addedLine]);
+      const updatedData = [...originalData, addedLine];
+      setOriginalData(updatedData);
+      applyFilters(updatedData, filters);
       setNewLine({
         numero_de_gsm: '',
         full_name: '',
@@ -136,20 +174,6 @@ const TelephoneLine = () => {
     } catch (error) {
       console.error('Error adding Telephone Line:', error.message);
       alert('Failed to add telephone line: ' + error.message);
-    }
-  };
-
-  const handleDeleteLine = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/telephone-lines/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      setTelephoneLines((prevLines) => prevLines.filter(line => line.id !== id));
-    } catch (error) {
-      console.error('Error deleting Telephone Line:', error.message);
-      alert('Failed to delete telephone line: ' + error.message);
     }
   };
 
@@ -167,7 +191,9 @@ const TelephoneLine = () => {
         },
       });
       const updatedLine = response.data;
-      setTelephoneLines(telephoneLines.map(line => line.id === updatedLine.id ? updatedLine : line));
+      const updatedData = originalData.map(line => line.id === updatedLine.id ? updatedLine : line);
+      setOriginalData(updatedData);
+      applyFilters(updatedData, filters);
       setIsEditing(false);
       setCurrentLine(null);
     } catch (error) {
@@ -191,6 +217,21 @@ const TelephoneLine = () => {
     }
   };
 
+  const handleDeleteLine = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/telephone-lines/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const updatedData = originalData.filter(line => line.id !== id);
+      setOriginalData(updatedData);
+      applyFilters(updatedData, filters);
+    } catch (error) {
+      console.error('Error deleting Telephone Line:', error.message);
+      alert('Failed to delete telephone line: ' + error.message);
+    }
+  };
   const columns = React.useMemo(() => [
     {
       Header: '#',
@@ -215,15 +256,23 @@ const TelephoneLine = () => {
     ...Object.keys(newLine).map((key) => ({
       Header: getCustomHeaderName(key),
       accessor: key,
-      Filter: SelectColumnFilter,
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options[key]}
+          placeholder={`Filter by ${getCustomHeaderName(key)}`}
+          handleFilterChange={handleFilterChange}
+          handleRemoveFilter={handleRemoveFilter}
+        />
+      ),
     })),
-  ], [newLine, currentPage, rowsPerPage]);  
+  ], [newLine, currentPage, rowsPerPage, options, filters]);
 
   const paginatedData = React.useMemo(() => {
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-    return telephoneLines.slice(startIndex, endIndex);
-  }, [telephoneLines, currentPage, rowsPerPage]);
+    return filteredData.slice(startIndex, endIndex);
+  }, [filteredData, currentPage, rowsPerPage]);
 
   return (
     <div className="telephone-line-manager">
@@ -240,7 +289,7 @@ const TelephoneLine = () => {
                   {Object.keys(newLine).slice(index, index + 3).map(innerKey => (
                     <td key={innerKey}>
                       <label className="telephone-line-form-label">{getCustomHeaderName(innerKey)}</label>
-                      {['direction', 'fonction', 'operateur', 'categorie', 'poste_GSM'].includes(innerKey) ? (
+                      {['code_entite', 'direction', 'fonction', 'operateur', 'categorie', 'poste_GSM'].includes(innerKey) ? (
                         <CustomDropdown
                           name={innerKey}
                           value={isEditing ? currentLine[innerKey] : newLine[innerKey]}
@@ -271,6 +320,22 @@ const TelephoneLine = () => {
           <button className="add-button" onClick={handleAddLine}>Add Line</button>
         )}
       </div>
+      <div className="selected-filters">
+        <h3>Selected Filters:</h3>
+        <div>
+          {Object.keys(filters).map((key) => (
+            filters[key].length > 0 && (
+              <div key={key}>
+                <strong>{getCustomHeaderName(key)}:</strong> {filters[key].map((value) => (
+                  <span key={value} className="filter-badge">
+                    {value} <button onClick={() => handleRemoveFilter(key, value)}>x</button>
+                  </span>
+                ))}
+              </div>
+            )
+          ))}
+        </div>
+      </div>
       <div className="table-container">
         <Table columns={columns} data={paginatedData} />
       </div>
@@ -291,28 +356,33 @@ const TelephoneLine = () => {
   );
 };
 
-const SelectColumnFilter = ({ column: { filterValue, setFilter, preFilteredRows, id } }) => {
-  const options = React.useMemo(() => {
-    const optionsSet = new Set();
-    preFilteredRows.forEach(row => {
-      optionsSet.add(row.values[id]);
-    });
-    return [...optionsSet].map(option => ({ value: option, label: option }));
-  }, [id, preFilteredRows]);
+const SelectColumnFilter = ({ column: { filterValue, setFilter, id }, options = [], placeholder, handleFilterChange, handleRemoveFilter }) => {
+  const filterOptions = options.map(option => ({ value: option.value, label: option.label }));
 
   const handleChange = (selectedOptions) => {
     setFilter(selectedOptions ? selectedOptions.map(option => option.value) : undefined);
+    handleFilterChange(id, selectedOptions); // Call handleFilterChange to update filters
   };
 
   return (
-    <Select
-      value={options.filter(option => filterValue && filterValue.includes(option.value))}
-      onChange={handleChange}
-      options={options}
-      isMulti
-      placeholder="Filtrer par..."
-      className="filter-select"
-    />
+    <div>
+      <Select
+        value={filterOptions.filter(option => filterValue && filterValue.includes(option.value))}
+        onChange={handleChange}
+        options={filterOptions}
+        isMulti
+        placeholder={placeholder || 'Filter...'}
+        className="filter-select"
+        classNamePrefix="filter-select"
+      />
+      <div className="selected-values">
+        {filterValue && filterValue.map(value => (
+          <span key={value} className="filter-badge">
+            {value} <button onClick={() => handleRemoveFilter(id, value)}>x</button>
+          </span>
+        ))}
+      </div>
+    </div>
   );
 };
 
@@ -376,7 +446,7 @@ const CustomDropdown = ({ name, value, options, onChange, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = (option) => {
-    onChange({ target: { name, value: option } });
+    onChange({ target: { name, value: option.value } });
     setIsOpen(false);
   };
 
@@ -396,7 +466,7 @@ const CustomDropdown = ({ name, value, options, onChange, placeholder }) => {
         <div className="dropdown-menu">
           {options.map((option, index) => (
             <div key={index} className="dropdown-option" onClick={() => handleSelect(option)}>
-              {option}
+              {option.label}
             </div>
           ))}
         </div>

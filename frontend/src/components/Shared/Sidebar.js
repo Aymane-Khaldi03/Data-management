@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { NavLink, useHistory } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const [isActive, setIsActive] = useState(false);
-  const { logout } = useAuth();
-  const history = useHistory();
+  const { user, logout } = useAuth();
 
   const toggleSidebar = () => {
     setIsActive(!isActive);
@@ -17,48 +16,55 @@ const Sidebar = () => {
   };
 
   return (
-    <>
+    <div className={`sidebar-container ${isActive ? 'active' : 'minimized'}`}>
       <button className="sidebar-toggle" onClick={toggleSidebar}>
-        ☰ Menu
+        ☰
       </button>
-      <div className={`sidebar ${isActive ? 'active' : ''}`}>
+      <div className={`sidebar ${isActive ? 'active' : 'minimized'}`}>
         <nav>
           <ul>
-            <li>
-              <NavLink to="/dashboard" activeClassName="active">
-                Dashboard
-              </NavLink>
-            </li>
+            {user && user.role === 'admin' && (
+              <li>
+                <NavLink to="/dashboard" activeClassName="active">
+                  <span className="icon">🏠</span>
+                  <span className="text">Dashboard</span>
+                </NavLink>
+              </li>
+            )}
             <li>
               <NavLink to="/telecom-packs" activeClassName="active">
-                Parc Telecom
+                <span className="icon">📦</span>
+                <span className="text">Parc Telecom</span>
               </NavLink>
             </li>
             <li>
               <NavLink to="/telephone-lines" activeClassName="active">
-                Ligne Téléphonique
+                <span className="icon">📞</span>
+                <span className="text">Ligne Téléphonique</span>
               </NavLink>
             </li>
             <li>
               <NavLink to="/it-equipment" activeClassName="active">
-                Matériel informatique
+                <span className="icon">💻</span>
+                <span className="text">Matériel informatique</span>
               </NavLink>
             </li>
             <li>
               <NavLink to="/edit-excel" activeClassName="active">
-                Importer Excel
+                <span className="icon">📂</span>
+                <span className="text">Importer Excel</span>
               </NavLink>
             </li>
           </ul>
         </nav>
         <div className="logout-container">
           <button onClick={handleLogout} className="logout-button">
-            Logout
-            <span className="logout-icon">🔒</span>
+            <span className="icon">🔒</span>
+            <span className="text">Logout</span>
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -6,6 +6,7 @@ const TelecomPackModification = require('../models/TelecomPackModification');
 const User = require('../models/user');
 const TelecomPack = require('../models/TelecomPack');
 const { Op, fn, col } = require('sequelize');
+const TelephoneLine = require('../models/TelephoneLine');
 
 // Get all Telecom Packs
 router.get('/', telecomPackController.getAllTelecomPacks);
@@ -91,7 +92,6 @@ router.delete('/admin/telecom-pack-modifications', authenticate, async (req, res
   }
 });
 
-
 // Get distinct values for dropdowns
 router.get('/dropdown/:field', authenticate, async (req, res) => {
   try {
@@ -117,6 +117,24 @@ router.get('/dropdown/:field', authenticate, async (req, res) => {
         break;
       case 'dateEtat':
         columnName = 'dateetat'; // database column name
+        break;
+      case 'produit2':
+        columnName = 'produit2';
+        break;
+      case 'numero':
+        columnName = 'numero';
+        break;
+      case 'observation':
+        columnName = 'observation';
+        break;
+      case 'typePoste':
+        columnName = 'typePoste';
+        break;
+      case 'numeroDeSerie':
+        columnName = 'numeroDeSerie';
+        break;
+      case 'dateAffectation':
+        columnName = 'dateAffectation';
         break;
       default:
         throw new Error(`Field '${field}' is not recognized`);

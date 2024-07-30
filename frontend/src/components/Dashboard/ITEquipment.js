@@ -13,7 +13,7 @@ const setDefaultValues = (data, defaultValue = '------') => {
         if (['date_installation', 'fin_garantie', 'date_achat', 'date_livraison', 'date_sortie'].includes(key)) {
           return [key, null];  // Set date fields to null if empty
         } else {
-          return [key, defaultValue];  // Set other fields to default value// 
+          return [key, defaultValue];  // Set other fields to default value
         }
       }
       return [key, value];
@@ -54,7 +54,7 @@ const ITEquipment = () => {
     niveau_criticite: '',
     sla: '',
     date_sortie: '',
-    commentaire: '',  // Add this field
+    commentaire: '',
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -64,10 +64,11 @@ const ITEquipment = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const [filters, setFilters] = useState({}); // Add this line
-  const [sortBy, setSortBy] = useState([]); // Add this line
-  const [allITEquipments, setAllITEquipments] = useState([]); // Store all data for filtering and sorting
-  const [selectedFilters, setSelectedFilters] = useState({}); // Add this line
+  const [filters, setFilters] = useState({});
+  const [sortBy, setSortBy] = useState([]);
+  const [allITEquipments, setAllITEquipments] = useState([]);
+  const [selectedFilters, setSelectedFilters] = useState({});
+
   const fetchITEquipments = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -75,14 +76,15 @@ const ITEquipment = () => {
         console.error('No token found');
         return;
       }
-  
+
       const response = await axios.get('http://localhost:5000/api/it-equipments', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log('Response from server:', response.data); // Debug logging
+      console.log('Response from server:', response.data);
       setITEquipments(response.data.equipments);
+      setAllITEquipments(response.data.equipments);
       setOptions(response.data.uniqueValues);
     } catch (error) {
       console.error('Error fetching IT Equipments:', error.message);
@@ -109,7 +111,7 @@ const ITEquipment = () => {
       });
       console.log('Response from server:', response.data);
 
-      fetchITEquipments(); // Refresh the equipment list
+      fetchITEquipments();
       setNewEquipment({
         categorie: '',
         marque: '',
@@ -134,7 +136,7 @@ const ITEquipment = () => {
         niveau_criticite: '',
         sla: '',
         date_sortie: '',
-        commentaire: '', // Reset this field
+        commentaire: '',
       });
       console.log('Equipment added successfully');
     } catch (error) {
@@ -176,7 +178,6 @@ const ITEquipment = () => {
     });
   };
 
-
   const handleUpdateEquipment = async () => {
     if (currentEquipment.statut === 'REFORME' && !currentEquipment.date_sortie) {
       alert('The "date sortie" field must be filled if the statut is "reforme".');
@@ -200,7 +201,7 @@ const ITEquipment = () => {
         },
       });
       console.log('Response from server:', response.data);
-      fetchITEquipments(); // Refresh the equipment list
+      fetchITEquipments();
       setIsEditing(false);
       setCurrentEquipment(null);
       console.log('Equipment updated successfully');
@@ -224,21 +225,6 @@ const ITEquipment = () => {
     }
   };
 
-  const handleDateChange = (name, date) => {
-    const formattedDate = date ? formatDate(date.toISOString()) : '';
-    if (isEditing) {
-      setCurrentEquipment(prevState => ({
-        ...prevState,
-        [name]: date ? formattedDate : null,
-      }));
-    } else {
-      setNewEquipment(prevState => ({
-        ...prevState,
-        [name]: date ? formattedDate : null,
-      }));
-    }
-  };
-
   const handleFilterChange = (id, value) => {
     setFilters(prevFilters => ({
       ...prevFilters,
@@ -246,7 +232,7 @@ const ITEquipment = () => {
     }));
     setSelectedFilters(prevSelected => ({
       ...prevSelected,
-      [id]: value,
+      [id]: value.map(val => val.label),
     }));
   };
 
@@ -335,6 +321,26 @@ const ITEquipment = () => {
     setCurrentPage(pageNumber);
   };
 
+  const handleDeleteFilter = (filterKey, value) => {
+    setFilters(prev => {
+      const updatedFilters = { ...prev };
+      updatedFilters[filterKey] = updatedFilters[filterKey].filter(val => val.label !== value);
+      if (updatedFilters[filterKey].length === 0) {
+        delete updatedFilters[filterKey];
+      }
+      return updatedFilters;
+    });
+
+    setSelectedFilters(prevSelected => {
+      const updatedSelected = { ...prevSelected };
+      updatedSelected[filterKey] = updatedSelected[filterKey].filter(val => val !== value);
+      if (updatedSelected[filterKey].length === 0) {
+        delete updatedSelected[filterKey];
+      }
+      return updatedSelected;
+    });
+  };
+
   return (
     <div className="it-equipment-manager">
       <button className="itequipment-modify-back-button" onClick={() => history.goBack()}>
@@ -352,7 +358,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.categorie : newEquipment.categorie}
                   options={options.categorie || []}
                   onChange={handleChange}
-                  placeholder="Entrer/Selectionner la categorie" // Custom placeholder
+                  placeholder="Entrer/Selectionner la categorie"
                 />
               </td>
               <td>
@@ -362,7 +368,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.marque : newEquipment.marque}
                   options={options.marque || []}
                   onChange={handleChange}
-                  placeholder="Entrer/Selectionner la marque" // Custom placeholder
+                  placeholder="Entrer/Selectionner la marque"
                 />
               </td>
               <td>
@@ -372,7 +378,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.model : newEquipment.model}
                   options={options.model || []}
                   onChange={handleChange}
-                  placeholder="Entrer/Selectionner le model" // Custom placeholder
+                  placeholder="Entrer/Selectionner le model"
                 />
               </td>
               <td>
@@ -394,7 +400,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.serie : newEquipment.serie}
                   options={options.serie || []}
                   onChange={handleChange}
-                  placeholder="Entrer/Selectionner la serie" // Custom placeholder
+                  placeholder="Entrer/Selectionner la serie"
                 />
               </td>
               <td>
@@ -404,7 +410,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.code_localisation : newEquipment.code_localisation}
                   options={options.code_localisation || []}
                   onChange={handleChange}
-                  placeholder="Entrer/Selectionner le code de localisation" // Custom placeholder
+                  placeholder="Entrer/Selectionner le code de localisation"
                 />
               </td>
               <td>
@@ -414,7 +420,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.code_entite : newEquipment.code_entite}
                   options={options.code_entite || []}
                   onChange={handleChange}
-                  placeholder="Entrer/Selectionner le code d'entite" // Custom placeholder
+                  placeholder="Entrer/Selectionner le code d'entite"
                 />
               </td>
               <td>
@@ -448,7 +454,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.statut : newEquipment.statut}
                   options={options.statut || []}
                   onChange={handleChange}
-                  placeholder="Entrer/Selectionner le status" // Custom placeholder
+                  placeholder="Entrer/Selectionner le status"
                 />
               </td>
               <td>
@@ -458,7 +464,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.type_acquisition : newEquipment.type_acquisition}
                   options={options.type_acquisition || []}
                   onChange={handleChange}
-                  placeholder="Entrer/Selectionner le type d'acquisition" // Custom placeholder
+                  placeholder="Entrer/Selectionner le type d'acquisition"
                 />
               </td>
               <td>
@@ -492,7 +498,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.fournisseur : newEquipment.fournisseur}
                   options={options.fournisseur || []}
                   onChange={handleChange}
-                  placeholder="Entrer/Selectionner le fournisseur" // Custom placeholder
+                  placeholder="Entrer/Selectionner le fournisseur"
                 />
               </td>
               <td>
@@ -503,7 +509,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.numero_facture : newEquipment.numero_facture}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="Entrer le numero de facture" // Custom placeholder
+                  placeholder="Entrer le numero de facture"
                 />
               </td>
               <td>
@@ -514,7 +520,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.prix_achat : newEquipment.prix_achat}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="Entrer le prix achat" // Custom placeholder
+                  placeholder="Entrer le prix achat"
                 />
               </td>
             </tr>
@@ -527,7 +533,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.numero_appel_offre : newEquipment.numero_appel_offre}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="Entrer le numero d'appel offre" // Custom placeholder
+                  placeholder="Entrer le numero d'appel offre"
                 />
               </td>
               <td>
@@ -538,7 +544,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.numero_livraison : newEquipment.numero_livraison}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="Entrer le numero de livraison" // Custom placeholder
+                  placeholder="Entrer le numero de livraison"
                 />
               </td>
               <td>
@@ -549,7 +555,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.cout_maintenance : newEquipment.cout_maintenance}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="Entrer le cout de maintenance" // Custom placeholder
+                  placeholder="Entrer le cout de maintenance"
                 />
               </td>
               <td>
@@ -560,7 +566,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.emploi_principal : newEquipment.emploi_principal}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="Entrer l'emploi principale" // Custom placeholder
+                  placeholder="Entrer l'emploi principale"
                 />
               </td>
             </tr>
@@ -572,7 +578,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.niveau_criticite : newEquipment.niveau_criticite}
                   options={options.niveau_criticite || []}
                   onChange={handleChange}
-                  placeholder="Entrer/Selectionner le niveau de criticité" // Custom placeholder
+                  placeholder="Entrer/Selectionner le niveau de criticité"
                 />
               </td>
               <td>
@@ -582,7 +588,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.sla : newEquipment.sla}
                   options={options.sla || []}
                   onChange={handleChange}
-                  placeholder="Entrer/Selectionner le SLA" // Custom placeholder
+                  placeholder="Entrer/Selectionner le SLA"
                 />
               </td>
               <td>
@@ -604,7 +610,7 @@ const ITEquipment = () => {
                   value={isEditing ? currentEquipment.commentaire : newEquipment.commentaire}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="Entrer un commentaire" // Custom placeholder
+                  placeholder="Entrer un commentaire"
                 />
               </td>
             </tr>
@@ -616,27 +622,37 @@ const ITEquipment = () => {
           <button onClick={handleAddEquipment}>Add Equipment</button>
         )}
       </div>
-      <div className="itequipment-view-table-container">
-        <Table columns={columns} data={data} />
-      </div>
-      <div className="pagination-controls">
-        <button onClick={() => handlePageNumberClick(1)} disabled={currentPage === 1}>{'<<'}</button>
-        <button onClick={() => handlePageNumberClick(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
-        <span>
-          Page {currentPage} of {Math.ceil(filteredAndSortedData.length / rowsPerPage)}
-        </span>
-        <button onClick={() => handlePageNumberClick(currentPage + 1)} disabled={currentPage === Math.ceil(filteredAndSortedData.length / rowsPerPage)}>{'Suivant'}</button>
-        <button onClick={() => handlePageNumberClick(Math.ceil(filteredAndSortedData.length / rowsPerPage))} disabled={currentPage === Math.ceil(filteredAndSortedData.length / rowsPerPage)}>{'>>'}</button>
-        <select value={rowsPerPage} onChange={(e) => setRowsPerPage(Number(e.target.value))}>
-          <option value={10}>Show 10</option>
-          <option value={25}>Show 25</option>
-          <option value={50}>Show 50</option>
-          <option value={100}>Show 100</option>
-        </select>
-      </div>
 
+      <div className="itequipment-view-selected-filters-container">
+        <h3>Filtres Sélectionnés:</h3>
+        {Object.keys(selectedFilters).map((filterKey) => (
+          selectedFilters[filterKey].map((filterValue, index) => (
+            <span key={`${filterKey}-${index}`} className="itequipment-view-filter-chip">
+              {`${filterKey}: ${filterValue}`} <button onClick={() => handleDeleteFilter(filterKey, filterValue)}>x</button>
+            </span>
+          ))
+        ))}
+      </div>
+      <div className="itequipment-view-table-container">
+      <Table columns={columns} data={data} />
     </div>
-  );
+    <div className="pagination-controls">
+      <button onClick={() => handlePageNumberClick(1)} disabled={currentPage === 1}>{'<<'}</button>
+      <button onClick={() => handlePageNumberClick(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
+      <span>
+        Page {currentPage} of {Math.ceil(filteredAndSortedData.length / rowsPerPage)}
+      </span>
+      <button onClick={() => handlePageNumberClick(currentPage + 1)} disabled={currentPage === Math.ceil(filteredAndSortedData.length / rowsPerPage)}>{'Suivant'}</button>
+      <button onClick={() => handlePageNumberClick(Math.ceil(filteredAndSortedData.length / rowsPerPage))} disabled={currentPage === Math.ceil(filteredAndSortedData.length / rowsPerPage)}>{'>>'}</button>
+      <select value={rowsPerPage} onChange={(e) => setRowsPerPage(Number(e.target.value))}>
+        <option value={10}>Show 10</option>
+        <option value={25}>Show 25</option>
+        <option value={50}>Show 50</option>
+        <option value={100}>Show 100</option>
+      </select>
+    </div>
+  </div>
+);
 };
 
 const Table = ({ columns, data }) => {

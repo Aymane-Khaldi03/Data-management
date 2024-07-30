@@ -392,3 +392,27 @@
   background-color: #e6f7ff;
   cursor: pointer;
 }
+
+.itequipment-view-selected-filters-container {
+  margin-top: 20px;
+  margin-bottom: 20px; /* Ensure proper spacing */
+  text-align: center; /* Center-align the filters */
+  width: 100%; /* Ensure it takes the full width */
+}
+
+.itequipment-view-filter-chip {
+  display: inline-block;
+  background-color: #e0e0e0;
+  border-radius: 15px;
+  padding: 5px 10px;
+  margin: 5px;
+  font-size: 14px;
+}
+
+.itequipment-view-filter-chip button {
+  background: none;
+  border: none;
+  font-size: 14px;
+  margin-left: 5px;
+  cursor: pointer;
+}

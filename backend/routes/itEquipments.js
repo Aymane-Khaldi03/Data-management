@@ -50,7 +50,16 @@ router.get('/all', authenticate, async (req, res) => {
 router.get('/', authenticate, async (req, res) => {
   console.log('Fetching all IT equipments...');
   try {
-    const allEquipments = await ITEquipment.findAll(); // Fetch all equipments
+    const filters = req.query;
+    const whereClause = {};
+
+    Object.keys(filters).forEach(key => {
+      if (filters[key]) {
+        whereClause[key] = { [Op.like]: `%${filters[key]}%` };
+      }
+    });
+
+    const allEquipments = await ITEquipment.findAll({ where: whereClause });
     console.log('Fetched equipments from database:', allEquipments);
 
     if (!allEquipments || allEquipments.length === 0) {
@@ -72,11 +81,10 @@ router.get('/', authenticate, async (req, res) => {
 
     console.log('Processed equipments:', processedEquipments);
 
-    // Extract unique values and format them correctly
     const uniqueValues = Object.keys(processedEquipments[0] || {}).reduce((acc, key) => {
       acc[key] = [...new Set(processedEquipments.map(item => item[key]))]
-        .filter(value => value !== null && value !== '------')  // Filter out null and default values
-        .map(value => ({ label: value, value }));  // Format as { label, value }
+        .filter(value => value !== null && value !== '------')
+        .map(value => ({ label: value, value }));
       return acc;
     }, {});
 
@@ -91,6 +99,7 @@ router.get('/', authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // Create a new IT equipment
 router.post('/', authenticate, async (req, res) => {

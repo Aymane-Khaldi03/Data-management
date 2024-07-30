@@ -1,20 +1,30 @@
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: fixed;
+  top: 1;
+  left: 0;
+  height: 100vh;
+  z-index: 1000;
+}
+
 .sidebar {
   background-color: #0000002f;
   padding: 1rem;
-  width: 262px;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease-in-out;
-  margin: 12rem 0rem; 
+  height: 100%;
+  transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+  overflow: hidden;
   border-radius: 18px;
   border: 5px solid black;
 }
 
+.sidebar.minimized {
+  width: 85px;
+}
+
 .sidebar.active {
-  transform: translateX(0);
+  width: 270px;
 }
 
 .sidebar-toggle {
@@ -26,7 +36,7 @@
   border: none;
   padding: 0.6rem 1rem;
   cursor: pointer;
-  margin: 6.32rem 0rem; 
+  margin: 0rem 0rem;
   font-weight: bold;
   font-size: 1.8rem;
   border-radius: 5px;
@@ -36,21 +46,38 @@
 .sidebar ul {
   list-style-type: none;
   padding: 0;
-  margin: 2rem 0rem; 
+  margin:  5rem 0; /* Add margin to push items below the toggle button */
   border-radius: 5px;
 }
 
 .sidebar a {
-  text-decoration: black;
+  text-decoration: none;
   background-color: black;
   color: white;
-  display: block;
+  display: flex;
+  align-items: center;
   padding: 1rem; /* Adjusted padding for consistency */
   border: 5px solid black;
   border-radius: 10px;
   font-size: 1.8rem;
-  margin: 2.75rem 0rem; 
+  margin: 4rem 0;  /*change the distance between the elements in the icon*/
   text-align: center; /* Center the text */
+}
+
+.sidebar a .icon {
+  font-size: 1.8rem;
+  margin-right: 0.5rem;
+}
+
+.sidebar a .text {
+  display: none;
+  transition: opacity 0.3s;
+  opacity: 0;
+}
+
+.sidebar.active a .text {
+  display: inline;
+  opacity: 1;
 }
 
 .sidebar a:hover {
@@ -63,7 +90,7 @@
 }
 
 .logout-container {
-  padding: 0rem 0; /* Adjusted padding for consistency */
+  padding: 0;
 }
 
 .sidebar .logout-button {
@@ -74,22 +101,33 @@
   cursor: pointer;
   font-size: 1.8rem;
   font-weight: bold;
-  padding: 1.2rem; /* Adjusted padding for consistency */
+  padding: 1.2rem;
   transition: background-color 0.3s ease;
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin: 12rem 0rem; /* Added margin for consistent spacing */
-  text-align: center; /* Center the text */
+  margin: 5rem 0;  /*move the logout button in the sidebar*/
+  text-align: center;
+}
+
+.sidebar .logout-button .icon {
+  font-size: 1.8rem;
+  margin-right: 0.5rem;
+}
+
+.sidebar .logout-button .text {
+  display: none;
+  transition: opacity 0.3s;
+  opacity: 0;
+}
+
+.sidebar.active .logout-button .text {
+  display: inline;
+  opacity: 1;
 }
 
 .sidebar .logout-button:hover {
   background-color: red;
   color: white;
-}
-
-.sidebar .logout-icon {
-  font-size: 1.2rem;
-  margin-left: 0.5rem;
 }

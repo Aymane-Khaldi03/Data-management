@@ -11,7 +11,16 @@ const { Op, fn, col } = require('sequelize');
 router.get('/', authenticate, telephoneLineController.getTelephoneLines);
 
 // Create a new Telephone Line
-router.post('/', authenticate, telephoneLineController.createTelephoneLine);
+router.post('/', authenticate, async (req, res) => {
+  try {
+    console.log('Creating new telephone line with data:', req.body);
+    const newTelephoneLine = await TelephoneLine.create(req.body);
+    res.status(201).json(newTelephoneLine);
+  } catch (error) {
+    console.error('Error creating Telephone Line:', error.errors ? error.errors.map(e => e.message) : error.message);
+    res.status(400).json({ error: error.message });
+  }
+});
 
 // Get a Telephone Line by ID
 router.get('/:id', authenticate, telephoneLineController.getTelephoneLineById);
@@ -20,7 +29,30 @@ router.get('/:id', authenticate, telephoneLineController.getTelephoneLineById);
 router.put('/:id', authenticate, telephoneLineController.updateTelephoneLine);
 
 // Delete a Telephone Line
-router.delete('/:id', authenticate, isAdmin, telephoneLineController.deleteTelephoneLine);
+router.delete('/:id', authenticate, isAdmin, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // First delete the related modifications
+    await TelephoneLineModification.destroy({
+      where: {
+        telephoneLineId: id,
+      },
+    });
+
+    // Then delete the telephone line
+    await TelephoneLine.destroy({
+      where: {
+        id,
+      },
+    });
+
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting Telephone Line:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get Telephone Line modification history
 router.get('/admin/telephone-line-modifications', authenticate, isAdmin, async (req, res) => {
@@ -80,6 +112,12 @@ router.get('/dropdown/:field', authenticate, async (req, res) => {
       case 'poste_GSM':
         columnName = 'poste_GSM';
         break;
+      case 'numero_de_gsm':
+        columnName = 'numero_de_gsm';
+        break;
+      case 'full_name':
+        columnName = 'full_name';
+        break;
       default:
         throw new Error(`Field '${field}' is not recognized`);
     }
@@ -101,7 +139,7 @@ router.delete('/admin/drop-telephone-lines-table', authenticate, isAdmin, async 
     await TelephoneLineModification.destroy({
       where: {}
     });
-    
+
     // Now delete all rows in the TelephoneLine table
     await TelephoneLine.destroy({
       where: {}
@@ -114,5 +152,5 @@ router.delete('/admin/drop-telephone-lines-table', authenticate, isAdmin, async 
     res.status(500).json({ error: err.message });
   }
 });
-  
+
 module.exports = router;

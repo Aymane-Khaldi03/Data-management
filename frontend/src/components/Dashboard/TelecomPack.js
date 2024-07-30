@@ -41,12 +41,24 @@ const setDefaultValues = (data, defaultValue = '') => {
 
 const TelecomPack = () => {
   const [telecomPacks, setTelecomPacks] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [originalData, setOriginalData] = useState([]);
   const [options, setOptions] = useState({
     entite: [],
     operateur: [],
     produit: ['DATA', 'VOIX', 'MOBILE', 'INTERNET'],
     etatAbonnement: [],
+    produit2: [],
+    numero: [],
+    dateAbonnement: [],
+    dateReengagement: [],
+    dateEtat: [],
+    observation: [],
+    typePoste: [],
+    numeroDeSerie: [],
+    dateAffectation: []
   });
+  const [filters, setFilters] = useState({});
   const [newPack, setNewPack] = useState({
     entite: '',
     operateur: '',
@@ -58,34 +70,19 @@ const TelecomPack = () => {
     dateReengagement: '',
     dateEtat: '',
     observation: '',
-    typePoste: '',        // Added
-    numeroDeSerie: '',    // Added
-    dateAffectation: ''   // Added
+    typePoste: '',
+    numeroDeSerie: '',
+    dateAffectation: ''
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [currentPack, setCurrentPack] = useState({
-    entite: '',
-    operateur: '',
-    produit: '',
-    produit2: '',
-    numero: '',
-    etatAbonnement: '',
-    dateAbonnement: '',
-    dateReengagement: '',
-    dateEtat: '',
-    observation: '',
-    typePoste: '',        // Added
-    numeroDeSerie: '',    // Added
-    dateAffectation: ''   // Added
-  });
+  const [currentPack, setCurrentPack] = useState(null);
   const history = useHistory();
   const [subfieldOptions, setSubfieldOptions] = useState([]);
   const [subfield, setSubfield] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10); // Define the page size
   const [totalPages, setTotalPages] = useState(1);
+
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -95,9 +92,35 @@ const TelecomPack = () => {
     setCurrentPage(1); // Reset to the first page
   };
 
+  useEffect(() => {
+    const fetchTelecomPacks = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/telecom-packs', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        const data = response.data.map(formatTelecomPackData);
+        data.sort((a, b) => {
+          const entiteA = a.entite.match(/\d+/);
+          const entiteB = b.entite.match(/\d+/);
+          return entiteA - entiteB;
+        });
+        setOriginalData(data);
+        applyFilters(data, filters); // Apply filters on initial load
+      } catch (error) {
+        console.error('Error fetching Telecom Packs:', error.message);
+        alert('Failed to fetch telecom packs: ' + error.message);
+      }
+    };
+
+    fetchTelecomPacks();
+    fetchDropdownOptions();
+  }, []);
+
   const fetchDropdownOptions = async () => {
     try {
-      const fields = ['entite', 'operateur', 'etatAbonnement'];
+      const fields = ['entite', 'operateur', 'etatAbonnement', 'produit2', 'numero', 'dateAbonnement', 'dateReengagement', 'dateEtat', 'observation', 'typePoste', 'numeroDeSerie', 'dateAffectation'];
       const fetchedOptions = {};
       for (const field of fields) {
         const response = await axios.get(`http://localhost:5000/api/telecom-packs/dropdown/${field}`, {
@@ -111,7 +134,6 @@ const TelecomPack = () => {
 
       fetchedOptions.produit = ['DATA', 'VOIX', 'MOBILE', 'INTERNET'];
 
-
       setOptions(fetchedOptions);
     } catch (error) {
       console.error('Error fetching dropdown options:', error.message);
@@ -119,39 +141,44 @@ const TelecomPack = () => {
     }
   };
 
-  useEffect(() => {
-    let isMounted = true;
+  const applyFilters = (data, appliedFilters) => {
+    let filteredData = data;
 
-    const fetchTelecomPacks = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/telecom-packs', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        const data = response.data.map(formatTelecomPackData);
-        // Sort the data by "entite" column
-        data.sort((a, b) => {
-          const entiteA = a.entite.match(/\d+/);
-          const entiteB = b.entite.match(/\d+/);
-          return entiteA - entiteB;
-        });
-        if (isMounted) {
-          setTelecomPacks(data);
-          setTotalPages(Math.ceil(data.length / pageSize));
-        }
-      } catch (error) {
-        console.error('Error fetching Telecom Packs:', error.message);
-        alert('Failed to fetch telecom packs: ' + error.message);
+    Object.keys(appliedFilters).forEach(filterKey => {
+      if (appliedFilters[filterKey].length > 0) {
+        filteredData = filteredData.filter(item => appliedFilters[filterKey].includes(item[filterKey]));
       }
-    };
+    });
 
-    fetchTelecomPacks();
-    fetchDropdownOptions();
-    return () => {
-      isMounted = false;
-    };
-  }, [currentPage]);
+    setFilteredData(filteredData);
+    setTotalPages(Math.ceil(filteredData.length / rowsPerPage));
+    setCurrentPage(1); // Reset to the first page after applying filters
+  };
+
+  const handleFilterChange = (field, selectedOptions) => {
+    const values = selectedOptions ? selectedOptions.map(option => option.value) : [];
+    setFilters(prevFilters => {
+      const updatedFilters = {
+        ...prevFilters,
+        [field]: values
+      };
+      applyFilters(originalData, updatedFilters);
+      return updatedFilters;
+    });
+  };
+  const handleRemoveSelectedValue = (columnId, value) => {
+    const updatedValues = filters[columnId].filter(item => item !== value);
+    const updatedFilters = { ...filters, [columnId]: updatedValues };
+    setFilters(updatedFilters);
+    applyFilters(originalData, updatedFilters);
+  };
+  
+  const handleRemoveFilter = (field, value) => {
+    const updatedValues = filters[field].filter(item => item !== value);
+    const updatedFilters = { ...filters, [field]: updatedValues };
+    setFilters(updatedFilters);
+    applyFilters(originalData, updatedFilters);
+  };
 
   const handleAddPack = async () => {
     if (!newPack.entite) {
@@ -167,7 +194,9 @@ const TelecomPack = () => {
         },
       });
       const addedPack = response.data;
-      setTelecomPacks([...telecomPacks, addedPack]);
+      const updatedData = [...originalData, addedPack];
+      setOriginalData(updatedData);
+      applyFilters(updatedData, filters);
       setNewPack({
         entite: '',
         operateur: '',
@@ -178,11 +207,13 @@ const TelecomPack = () => {
         dateAbonnement: '',
         dateReengagement: '',
         dateEtat: '',
-        observation: ''
+        observation: '',
+        typePoste: '',
+        numeroDeSerie: '',
+        dateAffectation: ''
       });
       setSubfield('');
       setSubfieldOptions([]);
-      setTotalPages(Math.ceil([...telecomPacks, addedPack].length / pageSize));
     } catch (error) {
       console.error('Error adding Telecom Pack:', error.message);
       alert('Failed to add telecom pack: ' + error.message);
@@ -211,12 +242,13 @@ const TelecomPack = () => {
         },
       });
       const updatedPack = response.data;
-      setTelecomPacks(telecomPacks.map(pack => pack.id === updatedPack.id ? updatedPack : pack));
+      const updatedData = originalData.map(pack => pack.id === updatedPack.id ? updatedPack : pack);
+      setOriginalData(updatedData);
+      applyFilters(updatedData, filters);
       setIsEditing(false);
       setCurrentPack(null);
       setSubfield('');
       setSubfieldOptions([]);
-      setTotalPages(Math.ceil(telecomPacks.length / pageSize));
     } catch (error) {
       console.error('Error updating Telecom Pack:', error.message);
       alert('Failed to update telecom pack: ' + error.message);
@@ -259,6 +291,7 @@ const TelecomPack = () => {
     }
   };
 
+
   const handleSubfieldChange = (e) => {
     const { value } = e.target;
     if (isEditing) {
@@ -283,29 +316,19 @@ const TelecomPack = () => {
         },
       });
 
-      // Use functional state update to ensure the latest state is used
-      setTelecomPacks(prevTelecomPacks => {
-        const updatedTelecomPacks = prevTelecomPacks.filter(pack => pack.id !== id);
-        setTotalPages(Math.ceil(updatedTelecomPacks.length / pageSize));
-
-        // Adjust currentPage if necessary
-        if (currentPage > Math.ceil(updatedTelecomPacks.length / pageSize) && currentPage > 1) {
-          setCurrentPage(currentPage - 1);
-        }
-
-        return updatedTelecomPacks;
-      });
+      const updatedData = originalData.filter(pack => pack.id !== id);
+      setOriginalData(updatedData);
+      applyFilters(updatedData, filters);
     } catch (error) {
       console.error('Error deleting Telecom Pack:', error.message);
       alert('Failed to delete telecom pack: ' + error.message);
     }
   };
 
-
   const columns = React.useMemo(() => [
     {
       Header: '#',
-      accessor: (row, i) => (currentPage - 1) * pageSize + i + 1,
+      accessor: (row, i) => (currentPage - 1) * rowsPerPage + i + 1,
       disableFilters: true,
       disableSortBy: true,
     },
@@ -324,82 +347,166 @@ const TelecomPack = () => {
     {
       Header: 'Entite',
       accessor: 'entite',
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.entite}
+          placeholder="Filtrer par Entite"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     },
     {
       Header: 'Operateur',
       accessor: 'operateur',
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.operateur}
+          placeholder="Filtrer par Operateur"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     },
     {
       Header: 'Sous-Produit',
       accessor: 'produit2',
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.produit2}
+          placeholder="Filtrer par Sous-Produit"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     },
     {
       Header: 'Numero',
       accessor: 'numero',
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.numero}
+          placeholder="Filtrer par Numero"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     },
     {
       Header: 'Etat d\'Abonnement',
       accessor: 'etatAbonnement',
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.etatAbonnement}
+          placeholder="Filtrer par Etat d'Abonnement"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     },
     {
       Header: 'Date d\'Abonnement',
       accessor: 'dateAbonnement',
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.dateAbonnement}
+          placeholder="Filtrer par Date d'Abonnement"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     },
     {
       Header: 'Date de Reengagement',
       accessor: 'dateReengagement',
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.dateReengagement}
+          placeholder="Filtrer par Date de Reengagement"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     },
     {
       Header: 'Date d\'Etat',
       accessor: 'dateEtat',
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.dateEtat}
+          placeholder="Filtrer par Date d'Etat"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     },
     {
       Header: 'Observation',
       accessor: 'observation',
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.observation}
+          placeholder="Filtrer par Observation"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     },
     {
-      Header: 'Type de Poste',      // Added
-      accessor: 'typePoste',        // Added
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Header: 'Type de Poste',
+      accessor: 'typePoste',
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.typePoste}
+          placeholder="Filtrer par Type de Poste"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     },
     {
-      Header: 'Numero de Serie',    // Added
-      accessor: 'numeroDeSerie',    // Added
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Header: 'Numero de Serie',
+      accessor: 'numeroDeSerie',
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.numeroDeSerie}
+          placeholder="Filtrer par Numero de Serie"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     },
     {
-      Header: 'Date d\'Affectation',// Added
-      accessor: 'dateAffectation',  // Added
-      Filter: SelectColumnFilter,
-      placeholder: 'Filtrer par'
+      Header: 'Date d\'Affectation',
+      accessor: 'dateAffectation',
+      Filter: ({ column }) => (
+        <SelectColumnFilter
+          column={column}
+          options={options.dateAffectation}
+          placeholder="Filtrer par Date d'Affectation"
+          handleFilterChange={handleFilterChange}
+          handleRemoveSelectedValue={handleRemoveSelectedValue}
+        />
+      )
     }
-  ], [currentPage, pageSize]);  
+  ], [currentPage, rowsPerPage, options, filters]);
 
   const paginatedData = React.useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    return telecomPacks.slice(startIndex, endIndex);
-  }, [telecomPacks, currentPage, pageSize]);
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return filteredData.slice(startIndex, endIndex);
+  }, [filteredData, currentPage, rowsPerPage]);
 
   return (
     <div className="telecom-pack-manager">
@@ -407,6 +514,7 @@ const TelecomPack = () => {
         &#x21a9;
       </button>
       <h1>Telecom Pack Manager</h1>
+
       <div className="add-pack">
         <table className="form-table telecom-pack-form-table">
           <tbody>
@@ -567,6 +675,23 @@ const TelecomPack = () => {
           {isEditing ? 'Update Pack' : 'Add Pack'}
         </button>
       </div>
+      <div className="selected-filters">
+        <h3>Filtres Sélectionnés:</h3>
+        <div>
+          {Object.keys(filters).map((key) => (
+            filters[key].length > 0 && (
+              <div key={key}>
+                <strong>{key}:</strong> {filters[key].map((value) => (
+                  <span key={value} className="filter-badge">
+                    {value} <button onClick={() => handleRemoveFilter(key, value)}>x</button>
+                  </span>
+                ))}
+              </div>
+            )
+          ))}
+        </div>
+      </div>
+
       <div className="table-container">
         <Table columns={columns} data={paginatedData} />
       </div>
@@ -587,28 +712,33 @@ const TelecomPack = () => {
   );
 };
 
-const SelectColumnFilter = ({ column: { filterValue, setFilter, preFilteredRows, id, placeholder } }) => {
-  const options = React.useMemo(() => {
-    const optionsSet = new Set();
-    preFilteredRows.forEach(row => {
-      optionsSet.add(row.values[id]);
-    });
-    return [...optionsSet].map(option => ({ value: option, label: option }));
-  }, [id, preFilteredRows]);
+const SelectColumnFilter = ({ column: { filterValue, setFilter, id }, options = [], placeholder, handleFilterChange, handleRemoveSelectedValue }) => {
+  const filterOptions = options.map(option => ({ value: option, label: option }));
 
   const handleChange = (selectedOptions) => {
     setFilter(selectedOptions ? selectedOptions.map(option => option.value) : undefined);
+    handleFilterChange(id, selectedOptions); // Call handleFilterChange to update filters
   };
 
   return (
-    <Select
-      value={options.filter(option => filterValue && filterValue.includes(option.value))}
-      onChange={handleChange}
-      options={options}
-      isMulti
-      placeholder={placeholder || 'Filter...'}
-      className="filter-select"
-    />
+    <div>
+      <Select
+        value={filterOptions.filter(option => filterValue && filterValue.includes(option.value))}
+        onChange={handleChange}
+        options={filterOptions}
+        isMulti
+        placeholder={placeholder || 'Filter...'}
+        className="filter-select"
+        classNamePrefix="filter-select"
+      />
+      <div className="selected-values">
+        {filterValue && filterValue.map(value => (
+          <span key={value} className="filter-badge">
+            {value} <button onClick={() => handleRemoveSelectedValue(id, value)}>x</button>
+          </span>
+        ))}
+      </div>
+    </div>
   );
 };
 
@@ -675,20 +805,14 @@ const CustomDropdown = ({ name, value, options, onChange, placeholder }) => {
     setIsOpen(false);
   };
 
-  const handleInputChange = (e) => {
-    const { value } = e.target;
-    onChange({ target: { name, value } });
-  };
-
   return (
     <div className="dropdown-container">
       <input
         type="text"
         name={name}
         value={value}
-        onChange={handleInputChange}
+        onChange={onChange}
         placeholder={placeholder}
-        className="input-field"
       />
       <div className="dropdown-arrow" onClick={() => setIsOpen(!isOpen)}>
         ▼

@@ -1,129 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useTable, useSortBy, useFilters } from 'react-table';
+import { useTable, useSortBy, useFilters, usePagination } from 'react-table';
 import Select from 'react-select';
 import { useHistory } from 'react-router-dom';
 import * as XLSX from 'xlsx';
-
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { confirmAlert } from 'react-confirm-alert';
-import 'react-confirm-alert/src/react-confirm-alert.css';
+import { FaSortUp, FaSortDown, FaSort } from 'react-icons/fa';
+
 import './ITEquipmentView.css';
 
-
-
 const ITEquipmentView = () => {
-  useEffect(() => {
-    toast.configure();
-  }, []);
-
   const [itEquipments, setITEquipments] = useState([]);
   const [originalData, setOriginalData] = useState([]);
   const [columns, setColumns] = useState([]);
-  const [viewType, setViewType] = useState('general'); // State to toggle between tables
+  const [uniqueValues, setUniqueValues] = useState({});
+  const [filters, setFilters] = useState({});
   const history = useHistory();
 
-  ////
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
-
   useEffect(() => {
-    setTotalPages(Math.ceil(itEquipments.length / rowsPerPage));
-  }, [itEquipments.length, rowsPerPage]);
-
-  const handlePageNumberClick = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
-  const handleRowsPerPageChange = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setCurrentPage(1); // Reset to the first page
-  };
-
-  const paginatedData = React.useMemo(() => {
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return itEquipments.slice(startIndex, endIndex);
-  }, [itEquipments, currentPage, rowsPerPage]);
-
-  const columnsWithRowNumber = React.useMemo(() => {
-    const rowNumberColumn = {
-      Header: '#',
-      id: 'rowNumber',
-      accessor: (row, i) => (currentPage - 1) * rowsPerPage + i + 1,
-      disableFilters: true,
-      disableSortBy: true,
-      width: 50,
-    };
-
-    const filteredColumns = columns.filter(col => col.Header !== '#');
-    return [rowNumberColumn, ...filteredColumns];
-  }, [columns, currentPage, rowsPerPage]);
-  ////
-
-
-  // Define measureTextWidth function
-  const measureTextWidth = (text, font = '12px Arial') => {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    context.font = font;
-    return context.measureText(text).width;
-  };
-
-  useEffect(() => {
-    const fetchITEquipments = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/it-equipments', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-
-        if (response.data && Array.isArray(response.data.equipments)) {
-          const data = response.data.equipments.map(({ createdAt, updatedAt, id, ...rest }) => setDefaultValues(rest));
-          console.log('Fetched data from server:', data.length);
-          setITEquipments(data);
-          setOriginalData(data);
-
-          const headers = Object.keys(data[0] || {});
-          const maxWidths = headers.reduce((acc, header) => {
-            const headerWidth = measureTextWidth(header.replace(/_/g, ' '));
-            const maxLength = Math.max(
-              headerWidth,
-              ...data.map(row => measureTextWidth(row[header] ? row[header].toString() : ''))
-            );
-            acc[header] = maxLength;
-            return acc;
-          }, {});
-
-          const cols = [
-            {
-              Header: '#',
-              accessor: (row, i) => i + 1,
-              disableFilters: true,
-              disableSortBy: true,
-              width: 50,
-            },
-            ...headers.map((header) => ({
-              Header: header.replace(/_/g, ' '),
-              accessor: header,
-              Filter: SelectColumnFilter,
-              width: maxWidths[header] + 20,
-            })),
-          ];
-
-          setColumns(cols);
-        } else {
-          console.error('Format de données de réponse inattendu :', response.data);
-          toast.error('Erreur lors de la récupération des équipements informatiques : format de réponse inattendu');
-        }
-      } catch (error) {
-        console.error('Erreur lors de la récupération des équipements informatiques :', error);
-        toast.error('Erreur lors de la récupération des équipements informatiques : ' + error.message);
-      }
-    };
     fetchITEquipments();
   }, []);
 
@@ -143,45 +38,84 @@ const ITEquipmentView = () => {
     return updatedData;
   };
 
-  const filterData = (data) => {
+  const applyFilters = (data, filters) => {
     return data.filter(item => {
-      const requiredFields = ['categorie', 'marque', 'model', 'statut', 'type_acquisition'];
-      return requiredFields.every(field => item[field] && item[field] !== '------');
+      return Object.keys(filters).every(key => {
+        if (!filters[key].length) return true;
+        return filters[key].includes(item[key]);
+      });
     });
   };
 
-  const SelectColumnFilter = ({
-    column: { filterValue, setFilter, preFilteredRows, id },
-  }) => {
-    const options = React.useMemo(() => {
-      const optionsSet = new Set();
-      preFilteredRows.forEach(row => {
-        optionsSet.add(row.values[id]);
+  const fetchITEquipments = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/it-equipments', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       });
-      return [...optionsSet].map(option => ({ value: option, label: option }));
-    }, [id, preFilteredRows]);
 
-    const handleChange = (selectedOptions) => {
-      setFilter(selectedOptions ? selectedOptions.map(option => option.value) : undefined);
-    };
+      if (response.data && Array.isArray(response.data.equipments)) {
+        const data = response.data.equipments.map(({ createdAt, updatedAt, id, ...rest }) => setDefaultValues(rest));
+        setOriginalData(data);  // Save original data for filtering
 
-    return (
-      <Select
-        value={options.filter(option => filterValue && filterValue.includes(option.value))}
-        onChange={handleChange}
-        options={options}
-        isMulti
-        placeholder={'Filter by...'}
-        className="itequipment-view-filter-select"
-      />
-    );
+        const headers = Object.keys(data[0] || {});
+        const uniqueValues = {};
+
+        headers.forEach(header => {
+          uniqueValues[header] = [...new Set(data.map(item => item[header]))].map(value => ({ value, label: value }));
+        });
+
+        const cols = [
+          {
+            Header: '#',
+            accessor: (row, i) => i + 1,
+            disableFilters: true,
+            disableSortBy: true,
+            width: 50,
+          },
+          ...headers.map((header) => ({
+            Header: header.replace(/_/g, ' '),
+            accessor: header,
+            Filter: props => (
+              <SelectColumnFilter
+                {...props}
+                uniqueValues={uniqueValues[header]}
+                globalSetFilters={setFilters}
+                originalData={data}
+                setITEquipments={setITEquipments}
+                applyFilters={applyFilters}
+              />
+            ),
+          })),
+        ];
+
+        setColumns(cols);
+        setUniqueValues(uniqueValues);
+        setITEquipments(applyFilters(data, filters));  // Apply filters to the data
+      } else {
+        toast.error('Error fetching IT equipments');
+      }
+    } catch (error) {
+      toast.error('Error fetching IT equipments: ' + error.message);
+    }
   };
 
-  const exportToExcel = (data) => {
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "ITEquipments");
-    XLSX.writeFile(wb, "ITEquipments.xlsx");
+  useEffect(() => {
+    if (originalData.length) {
+      setITEquipments(applyFilters(originalData, filters));
+    }
+  }, [filters, originalData]);
+
+  const handleDelete = (filterKey, value) => {
+    setFilters(prev => {
+      const updatedFilters = { ...prev };
+      updatedFilters[filterKey] = updatedFilters[filterKey].filter(val => val !== value);
+      if (updatedFilters[filterKey].length === 0) {
+        delete updatedFilters[filterKey];
+      }
+      return updatedFilters;
+    });
   };
 
   const Table = ({ columns, data }) => {
@@ -195,16 +129,26 @@ const ITEquipmentView = () => {
       getTableProps,
       getTableBodyProps,
       headerGroups,
-      rows,
       prepareRow,
+      page,
+      canPreviousPage,
+      canNextPage,
+      pageOptions,
+      state: { pageIndex, pageSize },
+      gotoPage,
+      nextPage,
+      previousPage,
+      setPageSize,
     } = useTable(
       {
         columns,
         data,
         defaultColumn,
+        initialState: { pageIndex: 0 },
       },
       useFilters,
-      useSortBy
+      useSortBy,
+      usePagination
     );
 
     return (
@@ -218,13 +162,19 @@ const ITEquipmentView = () => {
                     <div style={{ width: column.width }}>
                       {column.render('Header')}
                       <span>
-                        {column.isSorted
-                          ? column.isSortedDesc
-                            ? ' 🔽'
-                            : ' 🔼'
-                          : ''}
+                        {column.isSorted ? (
+                          column.isSortedDesc ? (
+                            <FaSortDown />
+                          ) : (
+                            <FaSortUp />
+                          )
+                        ) : (
+                          <FaSort />
+                        )}
                       </span>
-                      <div>{column.canFilter ? column.render('Filter') : null}</div>
+                      <div>
+                        {column.canFilter ? column.render('Filter') : null}
+                      </div>
                     </div>
                   </th>
                 ))}
@@ -232,7 +182,7 @@ const ITEquipmentView = () => {
             ))}
           </thead>
           <tbody {...getTableBodyProps()}>
-            {rows.map((row, rowIndex) => {
+            {page.map((row, rowIndex) => {
               prepareRow(row);
               return (
                 <tr {...row.getRowProps()} className={rowIndex % 2 === 0 ? 'itequipment-view-row-even' : 'itequipment-view-row-odd'}>
@@ -244,9 +194,41 @@ const ITEquipmentView = () => {
             })}
           </tbody>
         </table>
+        <div className="pagination-controls">
+          <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>{'<<'}</button>
+          <button onClick={() => previousPage()} disabled={!canPreviousPage}>{'Précédent'}</button>
+          <span>
+            Page{' '}
+            <strong>
+              {pageIndex + 1} of {pageOptions.length}
+            </strong>{' '}
+          </span>
+          <button onClick={() => nextPage()} disabled={!canNextPage}>{'Suivant'}</button>
+          <button onClick={() => gotoPage(pageOptions.length - 1)} disabled={!canNextPage}>{'>>'}</button>
+          <select
+            value={pageSize}
+            onChange={e => {
+              setPageSize(Number(e.target.value));
+            }}
+          >
+            {[10, 25, 50, 100].map(pageSize => (
+              <option key={pageSize} value={pageSize}>
+                Show {pageSize}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     );
   };
+
+  const exportToExcel = (data) => {
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "ITEquipments");
+    XLSX.writeFile(wb, "ITEquipments.xlsx");
+  };
+
   return (
     <div className="itequipment-view-container">
       <ToastContainer />
@@ -254,51 +236,77 @@ const ITEquipmentView = () => {
         &#x21a9;
       </button>
       <h1 className="itequipment-view-title">Afficher IT Equipments</h1>
-      <button
-        className="itequipment-view-toggle-button"
-        onClick={() => {
-          if (viewType === 'general') {
-            setViewType('filtered');
-            const filtered = filterData(originalData);
-            console.log('Filtered data to display:', filtered); // Additional debug logging
-            setITEquipments(filtered);
-          } else {
-            setViewType('general');
-            setITEquipments(originalData); // Restore the original data
-          }
-        }}
-      >
-        {viewType === 'general' ? 'Afficher les équipements filtrés' : 'Afficher les équipements informatiques généraux'}
-      </button>
+      <div className="itequipment-view-selected-filters-container">
+        <h3>Filtres Sélectionnés:</h3>
+        {Object.keys(filters).map((filterKey) => (
+          filters[filterKey].map((filterValue, index) => (
+            <span key={`${filterKey}-${index}`} className="itequipment-view-filter-chip">
+              {`${filterKey}: ${filterValue}`} <button onClick={() => handleDelete(filterKey, filterValue)}>x</button>
+            </span>
+          ))
+        ))}
+      </div>
+      <div className="itequipment-view-filters-container">
+        {columns.map(column => (
+          column.canFilter ? (
+            <div key={column.id} className="itequipment-view-filter">
+              <label>{column.render('Header')}</label>
+              {column.render('Filter')}
+            </div>
+          ) : null
+        ))}
+      </div>
       {columns.length > 0 && (
         <Table
-          columns={columnsWithRowNumber}
-          data={paginatedData}
+          columns={columns}
+          data={itEquipments}  // Use filtered data
         />
       )}
-      <div className="pagination-controls">
-        <button onClick={() => handlePageNumberClick(1)} disabled={currentPage === 1}>{'<<'}</button>
-        <button onClick={() => handlePageNumberClick(currentPage - 1)} disabled={currentPage === 1}>{'Précédent'}</button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <button onClick={() => handlePageNumberClick(currentPage + 1)} disabled={currentPage === totalPages}>{'Suivant'}</button>
-        <button onClick={() => handlePageNumberClick(totalPages)} disabled={currentPage === totalPages}>{'>>'}</button>
-        <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
-          <option value={10}>Show 10</option>
-          <option value={25}>Show 25</option>
-          <option value={50}>Show 50</option>
-          <option value={100}>Show 100</option>
-        </select>
-      </div>
       <div className="itequipment-view-footer">
         <button
           className="itequipment-view-export-button"
-          onClick={() => exportToExcel(viewType === 'general' ? itEquipments : filterData(itEquipments))}
+          onClick={() => exportToExcel(itEquipments)}
         >
           Export to Excel
         </button>
       </div>
+    </div>
+  );
+};
+
+const SelectColumnFilter = ({
+  column: { filterValue = [], setFilter, id },
+  uniqueValues,
+  globalSetFilters,
+  originalData,  // Receive originalData as a prop
+  setITEquipments,
+  applyFilters,
+}) => {
+  const [selectedOptions, setSelectedOptions] = useState(() =>
+    filterValue.map(val => ({ value: val, label: val }))
+  );
+
+  const handleChange = (selected) => {
+    const values = selected ? selected.map(option => option.value) : [];
+    setSelectedOptions(selected);
+    setFilter(values.length ? values : undefined); // Use undefined to clear the filter
+    globalSetFilters(prev => {
+      const updatedFilters = { ...prev, [id]: values };
+      setITEquipments(applyFilters(originalData, updatedFilters));  // Apply filters to the data
+      return updatedFilters;
+    });
+  };
+
+  return (
+    <div className="itequipment-view-filter-container">
+      <Select
+        value={selectedOptions}
+        onChange={handleChange}
+        options={uniqueValues}
+        isMulti
+        placeholder={'Filter by...'}
+        className="itequipment-view-filter-select"
+      />
     </div>
   );
 };
