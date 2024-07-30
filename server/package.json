@@ -4,10 +4,8 @@
   "description": "Backend for MERN stack application with PostgreSQL",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "server": "node server.js",
-    "postinstall": "cd client && npm install && npm run build"
+    "server": "nodemon server.js",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider npm install --legacy-peer-deps --prefix client && npm run build --prefix client && npm install --legacy-peer-deps"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -30,7 +28,6 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
     "nodemon": "^2.0.15"
   },
   "author": "Your Name",
