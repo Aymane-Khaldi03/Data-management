@@ -20,14 +20,14 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*',
+    origin: process.env.FRONTEND_URL || '*', // Update this line
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
   },
 });
 
 const corsOptions = {
-  origin: '*',
+  origin: process.env.FRONTEND_URL || '*', // Update this line
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   preflightContinue: false,
   optionsSuccessStatus: 204,
