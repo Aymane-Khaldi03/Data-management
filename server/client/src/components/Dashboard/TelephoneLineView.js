@@ -6,6 +6,7 @@ import { useHistory } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { FaSortUp, FaSortDown, FaSort } from 'react-icons/fa'; // Import icons
 import './TelephoneLineView.css';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const TelephoneLineView = () => {
   const [telephoneLines, setTelephoneLines] = useState([]);
@@ -17,7 +18,7 @@ const TelephoneLineView = () => {
 
   const fetchTelephoneLines = async (appliedFilters = {}) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/telephone-lines', {
+      const response = await axios.get(`${API_URL}/api/telephone-lines`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
