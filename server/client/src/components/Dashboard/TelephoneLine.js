@@ -4,6 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { useTable, useSortBy, useFilters } from 'react-table';
 import Select from 'react-select';
 import './TelephoneLine.css';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const setDefaultValues = (data, defaultValue = '------') => {
   return Object.fromEntries(
@@ -74,7 +75,7 @@ const TelephoneLine = () => {
   useEffect(() => {
     const fetchTelephoneLines = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/telephone-lines', {
+         = await axios.get(`${API_URL}/api/telephone-lines`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -97,7 +98,7 @@ const TelephoneLine = () => {
       const fields = ['code_entite', 'direction', 'fonction', 'operateur', 'categorie', 'poste_GSM', 'numero_de_gsm', 'full_name'];
       const fetchedOptions = {};
       for (const field of fields) {
-        const response = await axios.get(`http://localhost:5000/api/telephone-lines/dropdown/${field}`, {
+        const response = await axios.get(`${API_URL}/api/telephone-lines/dropdown/${field}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -152,7 +153,7 @@ const TelephoneLine = () => {
 
     try {
       const formattedLine = setDefaultValues(newLine);
-      const response = await axios.post('http://localhost:5000/api/telephone-lines', formattedLine, {
+      const response = await axios.post(`${API_URL}/api/telephone-lines`, formattedLine, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -185,7 +186,7 @@ const TelephoneLine = () => {
   const handleUpdateLine = async () => {
     try {
       const formattedLine = setDefaultValues(currentLine);
-      const response = await axios.put(`http://localhost:5000/api/telephone-lines/${currentLine.id}`, formattedLine, {
+      const response = await axios.put(`${API_URL}/api/telephone-lines/${currentLine.id}`, formattedLine, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -219,7 +220,7 @@ const TelephoneLine = () => {
 
   const handleDeleteLine = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/telephone-lines/${id}`, {
+      await axios.delete(`${API_URL}/api/telephone-lines/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
