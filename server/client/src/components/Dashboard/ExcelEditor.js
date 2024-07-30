@@ -4,8 +4,9 @@ import * as XLSX from 'xlsx';
 import { FaFileExcel } from 'react-icons/fa';
 import io from 'socket.io-client';
 import './ExcelEditor.css';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-const socket = io('http://localhost:5000');
+const socket = io(API_URL);
 
 const ExcelEditor = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -19,7 +20,7 @@ const ExcelEditor = () => {
     if (table) {
       const fetchSchema = async () => {
         try {
-          const response = await axios.get(`http://localhost:5000/api/schema/${table}`, {
+          const response = await axios.get(`${API_URL}/api/schema/${table}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
@@ -58,7 +59,7 @@ const ExcelEditor = () => {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      const response = await axios.post(`http://localhost:5000/api/upload/${table}`, formData, {
+      const response = await axios.post(`${API_URL}/api/upload/${table}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
