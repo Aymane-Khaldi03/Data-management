@@ -7,6 +7,7 @@ import * as XLSX from 'xlsx';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaSortUp, FaSortDown, FaSort } from 'react-icons/fa';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 import './ITEquipmentView.css';
 
@@ -49,7 +50,7 @@ const ITEquipmentView = () => {
 
   const fetchITEquipments = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/it-equipments', {
+      const response = await axios.get(`${API_URL}/api/it-equipments`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
