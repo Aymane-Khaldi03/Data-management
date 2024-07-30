@@ -6,6 +6,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 ////
 import './AdminDashboard.css';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const AdminDashboard = () => {
   const { user, loading } = useAuth();
@@ -21,7 +22,7 @@ const AdminDashboard = () => {
 
   const fetchUserHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/users/admin/user-history', {
+      const response = await fetch(`${API_URL}/api/users/admin/user-history`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +44,7 @@ const AdminDashboard = () => {
 
   const fetchModificationHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/it-equipments/admin/it-equipment-modifications', {
+      const response = await fetch(`${API_URL}/api/it-equipments/admin/it-equipment-modifications`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +66,7 @@ const AdminDashboard = () => {
 
   const fetchTelecomModificationHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/telecom-packs/admin/telecom-pack-modifications', {
+      const response = await fetch(`${API_URL}/api/telecom-packs/admin/telecom-pack-modifications`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -89,7 +90,7 @@ const AdminDashboard = () => {
 const fetchTelephoneLineModificationHistory = async () => {
   try {
     console.log('Fetching Telephone Line modification history...'); // Debugging statement
-    const response = await fetch('http://localhost:5000/api/telephone-lines/admin/telephone-line-modifications', {
+    const response = await fetch(`${API_URL}/api/telephone-lines/admin/telephone-line-modifications`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -143,7 +144,7 @@ const fetchTelephoneLineModificationHistory = async () => {
   }
   const handleResetModificationHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/it-equipments/admin/it-equipment-modifications', {
+      const response = await fetch(`${API_URL}/api/it-equipments/admin/it-equipment-modifications`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -164,7 +165,7 @@ const fetchTelephoneLineModificationHistory = async () => {
 
   const handleResetTelecomModificationHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/telecom-packs/admin/telecom-pack-modifications', {
+      const response = await fetch(`${API_URL}/api/telecom-packs/admin/telecom-pack-modifications`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +185,7 @@ const fetchTelephoneLineModificationHistory = async () => {
 
   const handleResetTelephoneLineModificationHistory = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/telephone-lines/admin/telephone-line-modifications', {
+      const response = await fetch(`${API_URL}/api/telephone-lines/admin/telephone-line-modifications`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -217,11 +218,11 @@ const fetchTelephoneLineModificationHistory = async () => {
       try {
         let requestUrl = '';
         if (table === 'it-equipments') {
-          requestUrl = 'http://localhost:5000/api/it-equipments/admin/drop-it-equipments-table';
+          requestUrl = `${API_URL}/api/it-equipments/admin/drop-it-equipments-table`;
         } else if (table === 'telecom-pack') {
-          requestUrl = 'http://localhost:5000/api/telecom-packs/admin/drop-telecom-packs-table';
+          requestUrl = `${API_URL}/api/telecom-packs/admin/drop-telecom-packs-table`;
         } else if (table === 'telephone-lines') {
-          requestUrl = 'http://localhost:5000/api/telephone-lines/admin/drop-telephone-lines-table';
+          requestUrl = `${API_URL}/api/telephone-lines/admin/drop-telephone-lines-table`;
         }
 
         console.log(`Request URL: ${requestUrl}`);
