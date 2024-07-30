@@ -7,9 +7,9 @@ import * as XLSX from 'xlsx';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaSortUp, FaSortDown, FaSort } from 'react-icons/fa';
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
 import './ITEquipmentView.css';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const ITEquipmentView = () => {
   const [itEquipments, setITEquipments] = useState([]);
