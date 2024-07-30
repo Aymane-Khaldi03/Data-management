@@ -75,7 +75,7 @@ const TelephoneLine = () => {
   useEffect(() => {
     const fetchTelephoneLines = async () => {
       try {
-         = await axios.get(`${API_URL}/api/telephone-lines`, {
+          const response = await axios.get(`${API_URL}/api/telephone-lines`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
