@@ -122,6 +122,9 @@
 
 .itequipment-view-selected-filters-container {
   margin: 20px 0;
+  background-color: #f9f9f9;
+  padding: 10px; /* Optional: Add padding for better spacing */
+  border-radius: 10px; /* Optional: Add border-radius for rounded corners */
 }
 
 .itequipment-view-filter-chip {
