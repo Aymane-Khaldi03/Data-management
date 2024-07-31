@@ -311,7 +311,7 @@ const ITEquipment = () => {
           onChange={(value) => handleFilterChange(id, value)}
           options={options[id] ? options[id].map(option => ({ label: option.label, value: option.value })) : []}
           isMulti
-          placeholder={`Filter by ${key.replace(/_/g, ' ')}`}
+          placeholder={`Filtrer par ${key.replace(/_/g, ' ')}`}
           className="filter-select"
         />
       ),
