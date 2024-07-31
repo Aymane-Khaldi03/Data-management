@@ -1,5 +1,5 @@
-import React from 'react';
-import { Route, Switch, Redirect, useLocation, BrowserRouter as Router } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Route, Switch, Redirect, useLocation, useHistory, BrowserRouter as Router } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './components/Auth/Login';
 import Signup from './components/Auth/Signup';
@@ -24,15 +24,18 @@ import './App.css';
 const AppContent = () => {
   const { user, loading } = useAuth();
   const location = useLocation();
+  const history = useHistory();
 
   const showSidebar = !['/', '/signup', '/login'].includes(location.pathname);
 
+  useEffect(() => {
+    if (!user && location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/') {
+      history.push('/login');
+    }
+  }, [user, location.pathname, history]);
+
   if (loading) {
     return <div>Loading...</div>;
-  }
-
-  if (!user && location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/') {
-    return <Redirect to="/login" />;
   }
 
   const getDashboardComponent = () => {
@@ -56,7 +59,7 @@ const AppContent = () => {
           <Route path="/login" component={Login} />
           <Route path="/signup" component={Signup} />
           <Route path="/dashboard" render={getDashboardComponent} />
-          
+
           <Route path="/it-equipment" exact component={ITEquipmentLanding} />
           <Route path="/it-equipment-manager" component={ITEquipment} />
           <Route path="/it-equipment-view" component={ITEquipmentView} />
