@@ -48,9 +48,9 @@ const TelephoneLineLanding = () => {
         className="modal"
         overlayClassName="overlay"
       >
-        <h2>Accès refusé</h2>
-        <p>Vous n'avez pas la permission de modifier cette page.</p>
-        <button onClick={closeModal}>Close</button>
+        <h2>Accès Refusé</h2>
+        <p>Vous n'avez pas la permission d'accéder à cette page.</p>
+        <button onClick={closeModal}>Fermer</button>
       </Modal>
     </div>
   );
