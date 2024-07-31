@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const [isActive, setIsActive] = useState(false);
   const { user, logout } = useAuth();
+  const history = useHistory();
 
   const toggleSidebar = () => {
     setIsActive(!isActive);
@@ -13,6 +14,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     logout();
+    history.push('/login'); // Explicitly navigate to login page
   };
 
   return (
