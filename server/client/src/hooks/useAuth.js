@@ -49,6 +49,7 @@ const useProvideAuth = () => {
         localStorage.setItem('token', data.token);
         const loggedInUser = { email, role: decodedToken.user.role, fullName: decodedToken.user.fullName };
         setUser(loggedInUser);
+        history.push('/dashboard'); // Redirect to dashboard after login
         return loggedInUser;
       } else {
         const error = await response.json();
@@ -73,7 +74,9 @@ const useProvideAuth = () => {
         const data = await response.json();
         const decodedToken = JSON.parse(atob(data.token.split('.')[1]));
         localStorage.setItem('token', data.token);
-        setUser({ email, role: decodedToken.user.role, fullName: decodedToken.user.fullName });
+        const loggedInUser = { email, role: decodedToken.user.role, fullName: decodedToken.user.fullName };
+        setUser(loggedInUser);
+        history.push('/dashboard'); // Redirect to dashboard after signup
         setLoading(false);
       } else {
         const error = await response.json();
