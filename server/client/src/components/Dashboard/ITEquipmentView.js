@@ -305,7 +305,7 @@ const SelectColumnFilter = ({
         onChange={handleChange}
         options={uniqueValues}
         isMulti
-        placeholder={'Filter by...'}
+        placeholder={'Filtrer par...'}
         className="itequipment-view-filter-select"
       />
     </div>
