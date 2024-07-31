@@ -29,10 +29,10 @@ const AppContent = () => {
   const showSidebar = !['/', '/signup', '/login'].includes(location.pathname);
 
   useEffect(() => {
-    if (!user && location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/') {
+    if (!loading && !user && location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/') {
       history.push('/login');
     }
-  }, [user, location.pathname, history]);
+  }, [user, loading, location.pathname, history]);
 
   if (loading) {
     return <div>Loading...</div>;
