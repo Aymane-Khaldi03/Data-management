@@ -272,7 +272,7 @@ const SelectColumnFilter = ({
         onChange={handleChange}
         options={uniqueValues}
         isMulti
-        placeholder={'Filter by...'}
+        placeholder={'Filtrer par...'}
         className="telephoneline-view-filter-select"
       />
       {selectedOptions.length > 0 && (
