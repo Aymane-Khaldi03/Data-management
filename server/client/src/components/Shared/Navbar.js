@@ -17,9 +17,11 @@ const Navbar = () => {
         </li>
         {isAuthenticated ? (
           <>
-            <li>
-              <Link to="/dashboard" className="nav-link">Dashboard</Link>
-            </li>
+            {user.role === 'admin' && (
+              <li>
+                <Link to="/dashboard" className="nav-link">Dashboard</Link>
+              </li>
+            )}
           </>
         ) : (
           <>
