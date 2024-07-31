@@ -261,7 +261,7 @@ const TelephoneLine = () => {
         <SelectColumnFilter
           column={column}
           options={options[key]}
-          placeholder={`Filter by ${getCustomHeaderName(key)}`}
+          placeholder={`Filtrer par ${getCustomHeaderName(key)}`}
           handleFilterChange={handleFilterChange}
           handleRemoveFilter={handleRemoveFilter}
         />
