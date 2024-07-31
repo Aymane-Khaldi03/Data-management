@@ -398,6 +398,10 @@
   margin-bottom: 20px; /* Ensure proper spacing */
   text-align: center; /* Center-align the filters */
   width: 100%; /* Ensure it takes the full width */
+
+  background-color: #f9f9f9;
+  padding: 10px; /* Optional: Add padding for better spacing */
+  border-radius: 10px; /* Optional: Add border-radius for rounded corners */
 }
 
 .itequipment-view-filter-chip {
