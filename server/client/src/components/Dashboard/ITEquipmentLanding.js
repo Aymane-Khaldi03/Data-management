@@ -48,9 +48,9 @@ const ITEquipmentLanding = () => {
         className="modal"
         overlayClassName="overlay"
       >
-        <h2>Access Denied</h2>
-        <p>You do not have permission to modify this page.</p>
-        <button onClick={closeModal}>Close</button>
+        <h2>Accès Refusé</h2>
+        <p>Vous n'avez pas la permission d'accéder à cette page.</p>
+        <button onClick={closeModal}>Fermer</button>
       </Modal>
     </div>
   );
