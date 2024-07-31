@@ -31,6 +31,7 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.995);
     max-width: 800px;
     margin: 0 auto;
+    margin-left: 350px;
   }
   
   .home img {
@@ -50,6 +51,7 @@
     width: 100%;
     border-radius: 10px;
     font-size: 1.5rem;
+    margin-left: 350px;
   }
   
   body {
