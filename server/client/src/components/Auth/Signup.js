@@ -31,7 +31,7 @@ const Signup = () => {
       const errorMessage = error.response && error.response.data ? error.response.data.msg : error.message;
       setMessage('Signup failed: ' + errorMessage);
     }
-  };
+  };  
 
   return (
     <Container>
