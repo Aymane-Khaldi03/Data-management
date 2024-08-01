@@ -216,7 +216,7 @@ const TelephoneLineView = () => {
       <button className="telephoneline-view-back-button" onClick={() => history.push('/telephone-lines')}>
         &#x21a9;
       </button>
-      <h1 className="telephoneline-view-title">Afficher Line Téléphonique</h1>
+      <h1 className="telephoneline-view-title">Afficher GSM</h1>
       <div className="telephoneline-view-selected-filters-container">
         {Object.keys(filters).map((filterKey) => (
           filters[filterKey].map((filterValue, index) => (
