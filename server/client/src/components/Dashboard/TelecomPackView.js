@@ -201,7 +201,7 @@ const TelecomPackView = () => {
       <button className="telecompack-view-back-button" onClick={() => history.push('/telecom-packs')}>
         &#x21a9;
       </button>
-      <h1 className="telecompack-view-title">Afficher Parc Telecom</h1>
+      <h1 className="telecompack-view-title">Afficher Parc Télécom</h1>
       <div className="telecompack-view-selected-filters-container">
         {Object.keys(filters).map((filterKey) => (
           filters[filterKey].map((filterValue, index) => (
