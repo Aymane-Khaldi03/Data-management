@@ -167,7 +167,7 @@ router.get('/admin/it-equipment-modifications', authenticate, async (req, res) =
   try {
     const modifications = await ITEquipmentModification.findAll({
       include: [
-        { model: ITEquipment },
+        { model: ITEquipment, attributes: ['serie'] },
         { model: User, attributes: ['fullName', 'email'] }
       ],
       order: [['modifiedAt', 'DESC']],
