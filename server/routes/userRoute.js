@@ -7,8 +7,13 @@ const {
   updateUserProfile,
   deleteUser,
   getUserHistory,
+  validateUser,
+  changeUserPassword,
+  deleteUserByEmail,
+  changeUserRole,
+  fetchAdminList
 } = require('../controllers/userController');
-const { authenticate } = require('../middleware/authMiddleware');
+const { authenticate, isAdmin } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -54,5 +59,28 @@ router.put('/profile', authenticate, updateUserProfile);
 // @desc    Delete user
 // @access  Private
 router.delete('/', authenticate, deleteUser);
+
+// @route   PUT /api/users/validate/:userId
+// @desc    Validate user account
+// @access  Private/Admin
+router.put('/validate/:email', authenticate, isAdmin, validateUser);
+
+// @route   PUT /api/users/password
+// @desc    Change user password
+// @access  Private/Admin
+router.put('/password', authenticate, isAdmin, changeUserPassword);
+
+// @route   DELETE /api/users/:userId
+// @desc    Remove user
+// @access  Private/Admin
+router.delete('/:email', authenticate, isAdmin, deleteUserByEmail);
+
+// @route   PUT /api/users/role
+// @desc    Change user role
+// @access  Private/Admin
+router.put('/role', authenticate, isAdmin, changeUserRole);
+
+// Route to get admin list in user routes (add this route in your backend routes)
+router.get('/admin/admin-list', authenticate, isAdmin, fetchAdminList);
 
 module.exports = router;
