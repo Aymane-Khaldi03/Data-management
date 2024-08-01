@@ -514,7 +514,7 @@ const TelecomPack = () => {
       <button className="telecompack-modify-back-button" onClick={() => history.goBack()}>
         &#x21a9;
       </button>
-      <h1>Telecom Pack Manager</h1>
+      <h1>Parc Télécom Manager</h1>
 
       <div className="add-pack">
         <table className="form-table telecom-pack-form-table">
