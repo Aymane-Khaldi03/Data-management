@@ -65,7 +65,7 @@ router.get('/admin/telecom-pack-modifications', authenticate, async (req, res) =
   try {
     const modifications = await TelecomPackModification.findAll({
       include: [
-        { model: TelecomPack, attributes: [] }, // Include only necessary attributes
+        { model: TelecomPack, attributes: ['entite'] }, // Include only necessary attributes
         { model: User, attributes: ['fullName', 'email'] }
       ],
       order: [['modifiedAt', 'DESC']],
