@@ -36,6 +36,8 @@ exports.registerUser = async (req, res) => {
       role,
     });
 
+    console.log('User created:', user);
+
     const payload = {
       user: {
         id: user.id,
@@ -48,7 +50,7 @@ exports.registerUser = async (req, res) => {
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
-      { expiresIn: '1h' },
+      { expiresIn: '1d' },
       (err, token) => {
         if (err) {
           console.error('Error signing token:', err);
@@ -90,6 +92,11 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ msg: 'Invalid Credentials' });
     }
 
+    if (!user.isValidated) {
+      console.log('User not validated');
+      return res.status(400).json({ msg: 'Account not validated. Please contact the admin.' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -100,7 +107,6 @@ exports.loginUser = async (req, res) => {
     // Update lastLogin field
     user.lastLogin = new Date();
     await user.save();
-
     const payload = {
       user: {
         id: user.id,
@@ -113,7 +119,7 @@ exports.loginUser = async (req, res) => {
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
-      { expiresIn: '1h' },
+      { expiresIn: '1d' },
       (err, token) => {
         if (err) {
           console.error('Error signing token:', err);
@@ -127,7 +133,6 @@ exports.loginUser = async (req, res) => {
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
-
 
 // @route   GET api/users/profile
 // @desc    Get user profile
@@ -178,18 +183,20 @@ exports.updateUserProfile = async (req, res) => {
 // @desc    Delete user profile
 // @access  Private
 exports.deleteUser = async (req, res) => {
+  const { userId } = req.params;
+  console.log('UserId received:', userId); // Add this to log the received userId
+  if (!userId) {
+    return res.status(400).json({ msg: 'No userId provided' });
+  }
   try {
-    const user = await User.findByPk(req.user.id);
-
+    const user = await User.findByPk(userId);
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
-
     await user.destroy();
-
-    res.json({ msg: 'User removed' });
+    res.status(204).send();
   } catch (err) {
-    console.error(err.message);
+    console.error('Error removing user:', err);
     res.status(500).send('Server error');
   }
 };
@@ -198,10 +205,11 @@ exports.deleteUser = async (req, res) => {
 // @desc    Get user login history
 // @access  Private
 // controllers/userController.js
+// In controllers/userController.js
 exports.getUserHistory = async (req, res) => {
   try {
     const users = await User.findAll({
-      attributes: ['fullName', 'email', 'lastLogin'],
+      attributes: ['fullName', 'email', 'lastLogin', 'isValidated'],
       where: {
         role: ['user', 'consultant'],
       },
@@ -210,6 +218,118 @@ exports.getUserHistory = async (req, res) => {
     res.json(users);
   } catch (err) {
     console.error('Error fetching user history:', err.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+
+// In validateUser function
+// In validateUser function
+exports.validateUser = async (req, res) => {
+  console.log('Validate user endpoint hit');
+  console.log('Request params:', req.params); // Log the received params
+  const { email } = req.params;
+  console.log('Email received:', email); // Log the email
+  try {
+    if (!email) {
+      return res.status(400).json({ msg: 'Email is required' });
+    }
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    user.isValidated = true;
+    await user.save();
+    res.json({ msg: 'User validated successfully' });
+  } catch (err) {
+    console.error('Error validating user account:', err);
+    res.status(500).send('Server error');
+  }
+};
+
+
+// In changeUserPassword function
+// In changeUserPassword function
+exports.changeUserPassword = async (req, res) => {
+  console.log('Change user password endpoint hit');
+  console.log('Request body:', req.body); // Log the received body
+  const { email, newPassword } = req.body;
+  console.log('Email received:', email); // Log the email
+  try {
+    if (!email || !newPassword) {
+      return res.status(400).json({ msg: 'Email and new password are required' });
+    }
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    await user.save();
+    res.json({ msg: 'Password changed successfully' });
+  } catch (err) {
+    console.error('Error changing user password:', err);
+    res.status(500).send('Server error');
+  }
+};
+
+
+// In removeUser function
+exports.deleteUserByEmail = async (req, res) => {
+  const { email } = req.params;
+  console.log('Email received:', email); // Log the received email
+  if (!email) {
+    return res.status(400).json({ msg: 'No email provided' });
+  }
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    await user.destroy();
+    res.status(204).send();
+  } catch (err) {
+    console.error('Error removing user:', err);
+    res.status(500).send('Server error');
+  }
+};
+
+exports.changeUserRole = async (req, res) => {
+  console.log('Change user role endpoint hit');
+  console.log('Request body:', req.body); // Log the received body
+  const { email, newRole } = req.body;
+  console.log('Email received:', email); // Log the email
+
+  try {
+    if (!email || !newRole) {
+      return res.status(400).json({ msg: 'Email and new role are required' });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    user.role = newRole;
+    await user.save();
+
+    res.json({ msg: 'User role changed successfully' });
+  } catch (err) {
+    console.error('Error changing user role:', err);
+    res.status(500).send('Server error');
+  }
+};
+
+exports.fetchAdminList = async (req, res) => {
+  try {
+    const admins = await User.findAll({
+      where: { role: 'admin' },
+      attributes: ['fullName', 'email', 'lastLogin'],
+    });
+    res.json(admins);
+  } catch (err) {
+    console.error('Error fetching admin list:', err.message);
     res.status(500).json({ msg: 'Server error' });
   }
 };
