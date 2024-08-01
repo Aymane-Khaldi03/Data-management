@@ -280,7 +280,7 @@ const TelephoneLine = () => {
       <button className="telephone-line-modify-back-button" onClick={() => history.goBack()}>
         &#x21a9;
       </button>
-      <h1>Line Téléphonique Manager</h1>
+      <h1>GSM Manager</h1>
       <div className="add-line">
         <table className="form-table telephone-line-form-table">
           <tbody>
@@ -322,7 +322,7 @@ const TelephoneLine = () => {
         )}
       </div>
       <div className="selected-filters">
-        <h3>Selected Filters:</h3>
+        <h3>Filtres Sélectionnés:</h3>
         <div>
           {Object.keys(filters).map((key) => (
             filters[key].length > 0 && (
