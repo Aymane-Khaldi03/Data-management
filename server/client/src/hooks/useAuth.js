@@ -1,5 +1,6 @@
 import React, { useState, useContext, createContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -69,15 +70,12 @@ const useProvideAuth = () => {
         },
         body: JSON.stringify({ fullName, email, password, role }),
       });
-
+  
       if (response.ok) {
+        // Handle successful signup without setting token or user state
         const data = await response.json();
-        const decodedToken = JSON.parse(atob(data.token.split('.')[1]));
-        localStorage.setItem('token', data.token);
-        const loggedInUser = { email, role: decodedToken.user.role, fullName: decodedToken.user.fullName };
-        setUser(loggedInUser);
-        history.push('/dashboard'); // Redirect to dashboard after signup
         setLoading(false);
+        return data;
       } else {
         const error = await response.json();
         throw new Error(error.msg || 'Signup failed');
