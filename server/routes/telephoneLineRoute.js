@@ -60,7 +60,7 @@ router.get('/admin/telephone-line-modifications', authenticate, isAdmin, async (
     console.log('Fetching Telephone Line modification history...'); // Debugging statement
     const modifications = await TelephoneLineModification.findAll({
       include: [
-        { model: TelephoneLine, attributes: [] }, // Include only necessary attributes
+        { model: TelephoneLine, attributes: ['numero_de_gsm'] }, // Include only necessary attributes
         { model: User, attributes: ['fullName', 'email'] }
       ],
       order: [['modifiedAt', 'DESC']],
