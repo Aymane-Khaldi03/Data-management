@@ -112,3 +112,79 @@
 .drop-button:hover {
   background-color: #0b187d;
 }
+
+/* Action buttons in the user table */
+.action-button {
+  margin-right: 10px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.validate-button {
+  background-color: #218838;
+  color: #fff;
+}
+
+.validate-button:hover {
+  .role-select {
+  margin-right: 10px; /* Add space between role select and the next button */
+  padding: 5px;
+  font-size: 14px;
+}
+
+  background-color: #034d13;
+}
+
+.change-password-button {
+  background-color: #ffeb3b;
+  color: #000;
+}
+
+.change-password-button:hover {
+  background-color: #e0a800;
+}
+
+.remove-button {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.remove-button:hover {
+  background-color: #c82333;
+}
+
+
+button[disabled] {
+  background-color: #d3d3d3;
+  color: #ffffff;
+  cursor: not-allowed;
+}
+
+.validated-status {
+  color: green;
+  font-weight: bold;
+  margin-right: 10px; /* Add space between validated status and the next button */
+}
+
+.validated-button {
+  background-color: #28a745;
+  color: #ffffff;
+  cursor: not-allowed;
+}
+
+.role-select {
+  margin-right: 10px; /* Add space between role select and the next button */
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: #3085d6;
+  box-shadow: 0 0 5px rgba(48, 133, 214, 0.5);
+}
